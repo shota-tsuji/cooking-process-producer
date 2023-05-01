@@ -12,6 +12,7 @@ services:
       MYSQL_PASSWORD: "admin"
     volumes:
       - ./data:/var/lib/mysql
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./schema.sql:/docker-entrypoint-initdb.d/01.sql:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/02.sql:ro
       - ./my.cnf:/etc/mysql/my.cnf:ro
 
