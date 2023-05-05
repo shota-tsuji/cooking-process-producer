@@ -14,11 +14,12 @@ CREATE TABLE IF NOT EXISTS resources (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TABLE IF NOT EXISTS steps (
     id INT NOT NULL,
     recipe_id INT NOT NULL,
     description VARCHAR(140) NOT NULL,
     resource_id INT NOT NULL,
+    order_number INT UNSIGNED NOT NULL,
     duration INT NOT NULL,
     FOREIGN KEY (recipe_id)
         REFERENCES recipes(id),
