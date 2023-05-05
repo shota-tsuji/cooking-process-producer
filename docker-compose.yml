@@ -15,4 +15,6 @@ services:
       - ./schema.sql:/docker-entrypoint-initdb.d/01.sql:ro
       - ./init.sql:/docker-entrypoint-initdb.d/02.sql:ro
       - ./my.cnf:/etc/mysql/my.cnf:ro
+    ports:
+      - "3307:3306"
 
