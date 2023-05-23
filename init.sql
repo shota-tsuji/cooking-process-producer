@@ -6,3 +6,8 @@ insert into resources (name, amount) values("コンロ(なべ・フライパン)
 
 insert into steps (id, recipe_id, description, resource_id, order_number, duration) values(UUID(), "00000000-0000-0000-0000-000000000000", "野菜を切る", 1, 0, 5);
 insert into steps (id, recipe_id, description, resource_id, order_number, duration) values(UUID(), "00000000-0000-0000-0000-000000000000", "煮込む", 2, 1, 25);
+
+insert into processes (name) values("process-0");
+
+insert into process_regstrations (process_id, recipe_id) values(1, "00000000-0000-0000-0000-000000000000");
+insert into process_regstrations (process_id, recipe_id) values(1, "11111111-1111-1111-1111-111111111111");
