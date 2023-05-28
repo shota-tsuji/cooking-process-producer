@@ -28,3 +28,12 @@ services:
     environment:
       - DATABASE_URL=mysql://admin:admin@mysql:3306/cooking
 
+  frontend:
+    image: cpp-frontend
+    container_name: cpp-frontend
+    restart: always
+    build: ../cpp-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8000:8000"
