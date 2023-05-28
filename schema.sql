@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS processes (
  Join table
  https://react.dev/reference/react/useState#ive-updated-the-state-but-logging-gives-me-the-old-value
  */
-CREATE TABLE IF NOT EXISTS process_regstrations (
+CREATE TABLE IF NOT EXISTS process_regsitrations (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     process_id BIGINT UNSIGNED NOT NULL,
     recipe_id VARCHAR(36) NOT NULL,
