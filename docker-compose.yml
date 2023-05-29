@@ -23,6 +23,7 @@ services:
     build: ../cpp-backend
     depends_on:
       - mysql
+      - main
     ports:
       - "8080:8080"
     environment:
@@ -32,8 +33,17 @@ services:
     image: cpp-frontend
     container_name: cpp-frontend
     restart: always
-    build: ../cpp-frontend
+    build: https://github.com/shota-tsuji/cpp-frontend.git
     depends_on:
       - backend
     ports:
       - "8000:8000"
+
+  main:
+    image: cpp-main
+    container_name: cpp-main
+    restart: always
+    build: ../cpp-main
+    ports:
+      - "50051:50051"
+
