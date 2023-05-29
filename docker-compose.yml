@@ -20,7 +20,7 @@ services:
     image: cpp-backend
     container_name: cpp-backend
     restart: always
-    build: ../cpp-backend
+    build: https://github.com/shota-tsuji/cpp-backend.git
     depends_on:
       - mysql
       - main
@@ -43,7 +43,7 @@ services:
     image: cpp-main
     container_name: cpp-main
     restart: always
-    build: ../cpp-main
+    build: https://github.com/shota-tsuji/cpp-main.git
     ports:
       - "50051:50051"
 
