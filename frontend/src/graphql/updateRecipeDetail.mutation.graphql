@@ -1,0 +1,14 @@
+mutation updateRecipeDetail($recipeDetailData: UpdateRecipeDetailInput!) {
+    updateRecipeDetail(recipeDetailData: $recipeDetailData) {
+        id,
+        title,
+        description,
+        steps {
+            id,
+            description,
+            resourceId,
+            orderNumber
+            duration
+        }
+    }
+}

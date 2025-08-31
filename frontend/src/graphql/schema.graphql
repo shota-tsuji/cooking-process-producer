@@ -1,0 +1,131 @@
+
+input CreateRecipeDetailInput {
+	title: String!
+	description: String!
+	steps: [CreateStepInput!]!
+}
+
+input CreateStepInput {
+	description: String!
+	resourceId: Int!
+	orderNumber: Int!
+	duration: Int!
+}
+
+input CreateResourceInput {
+    name: String!
+    amount: Int!
+}
+
+input CreateProcessInput {
+	recipeIdList: [String!]!
+}
+
+input CreateRecipeStepInput {
+	id: String!
+	steps: [CreateStepInput!]!
+}
+
+input UpdateResourceInput {
+	id: Int!
+	name: String!
+	amount: Int!
+}
+
+input StepInput {
+	id: String!
+	description: String!
+	resourceId: Int!
+	orderNumber: Int!
+	duration: Int!
+}
+
+input UpdateRecipeDetailInput {
+	id: String!
+	title: String!
+	description: String!
+	steps: [StepInput!]!
+}
+
+type ProcessId {
+	id: Int!
+}
+
+type RecipeId {
+	id: String!
+}
+
+type Mutation {
+	createRecipeDetail(recipeDetailData: CreateRecipeDetailInput!): RecipeDetail!
+	createResource(resourceData: CreateResourceInput!): Resource!
+	updateRecipeDetail(recipeDetailData: UpdateRecipeDetailInput!): RecipeDetail!
+	updateResource(resourceData: UpdateResourceInput!): Resource!
+	createProcess(recipeIdList: CreateProcessInput!): ProcessId!
+	createStep(createRecipeStepData: CreateRecipeStepInput!): RecipeId!
+}
+
+type Query {
+        recipeDetail(id: ID!): RecipeDetail!
+        recipes: [Recipe!]!
+        resource(id: ID!): Resource!
+        resources: [Resource!]!
+		process(id: ID!): Process!
+}
+
+type Process {
+	resourceInfos: [ResourceInfo!]!
+}
+
+type HelloResponse {
+	message: String!
+}
+
+type Recipe {
+	id: String!
+	title: String!
+	description: String!
+}
+
+type RecipeDetail {
+	id: String!
+	title: String!
+	description: String!
+	steps: [Step!]!
+}
+
+type Resource {
+        id: Int!
+        name: String!
+        amount: Int!
+}
+
+type ResourceInfo {
+	id: Int!
+	name: String!
+	steps: [StepResult!]!
+}
+
+type Step {
+	id: String!
+	description: String!
+	resourceId: Int!
+	orderNumber: Int!
+	duration: Int!
+}
+
+type StepResult {
+	id: String!
+	recipeId: String!
+	resourceId: Int!
+	startTime: Int!
+	duration: Int!
+	orderNumber: Int!
+	timelineIndex: Int!
+	description: String!
+	recipeName: String!
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+}
