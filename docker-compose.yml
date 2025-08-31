@@ -1,7 +1,7 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: mysql
+    container_name: cooking-process-producer-mysql-1
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "admin"
@@ -18,7 +18,7 @@ services:
 
   backend:
     image: cpp-backend
-    container_name: cpp-backend
+    #container_name: cpp-backend
     restart: always
     build: https://github.com/shota-tsuji/cpp-backend.git
     depends_on:
@@ -31,9 +31,9 @@ services:
 
   frontend:
     image: cpp-frontend
-    container_name: cpp-frontend
+    #container_name: cpp-frontend
     restart: always
-    build: https://github.com/shota-tsuji/cpp-frontend.git
+    build: ./frontend
     depends_on:
       - backend
     ports:
@@ -41,7 +41,7 @@ services:
 
   main:
     image: cpp-main
-    container_name: cpp-main
+    #container_name: cpp-main
     restart: always
     build: https://github.com/shota-tsuji/cpp-main.git
     ports:
