@@ -1,4 +1,4 @@
-FROM rust:1.69.0 AS build-stage
+FROM rust:1.89-bullseye AS build-stage
 
 RUN mkdir -p /cpp-backend
 WORKDIR /cpp-backend
