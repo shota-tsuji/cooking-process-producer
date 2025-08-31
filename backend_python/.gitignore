@@ -1,0 +1,4 @@
+.idea
+*_pb2*
+__pycache__
+*.egg-info
