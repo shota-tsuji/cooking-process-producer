@@ -16,6 +16,9 @@ impl Mutation {
     }
 }
 
+const RECIPE_INSERTION_QUERY: &str = r#"INSERT INTO recipes (id, title, description) VALUES (?, ?, ?)"#;
+const STEP_INSERTION_QUERY: &str = "INSERT INTO steps (id, recipe_id, description, resource_id, order_number, duration) VALUES (?, ?, ?, ?, ?, ?)";
+
 #[Object]
 impl Mutation {
     async fn create_recipe_detail(
@@ -26,7 +29,7 @@ impl Mutation {
         let recipe_id = Ulid::new().to_string();
         println!("ulid: {}", recipe_id.clone());
         let query_result =
-            sqlx::query(r#"INSERT INTO recipes (id, title, description) VALUES (?, ?, ?)"#)
+            sqlx::query(RECIPE_INSERTION_QUERY)
                 .bind(recipe_id.clone())
                 .bind(recipe_detail_data.title.clone())
                 .bind(recipe_detail_data.description.clone())
@@ -50,7 +53,7 @@ impl Mutation {
             .collect();
         for step in steps.iter() {
             println!("{}", recipe_id.clone());
-            sqlx::query("INSERT INTO steps (id, recipe_id, description, resource_id, order_number, duration) VALUES (?, ?, ?, ?, ?, ?)")
+            sqlx::query(STEP_INSERTION_QUERY)
                 .bind(step.id.clone())
                 .bind(recipe_id.clone())
                 .bind(step.description.clone())
@@ -175,7 +178,7 @@ impl Mutation {
             .collect();
         for step in steps.iter() {
             println!("{}", recipe_id.clone());
-            sqlx::query("INSERT INTO steps (id, recipe_id, description, resource_id, order_number, duration) VALUES (?, ?, ?, ?, ?, ?)")
+            sqlx::query(STEP_INSERTION_QUERY)
                 .bind(step.id.clone())
                 .bind(recipe_id.clone())
                 .bind(step.description.clone())
