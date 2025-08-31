@@ -312,3 +312,4 @@ struct ResourceRow {
     pub name: String,
     pub amount: i32,
 }
+

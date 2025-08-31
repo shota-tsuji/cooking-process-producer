@@ -12,6 +12,7 @@ use http::{
 use sqlx::mysql::MySqlPool;
 use std::env;
 use std::net::SocketAddr;
+use sea_orm::{ConnectOptions, Database, DbErr};
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use hello_world::greeter_client::GreeterClient;
@@ -24,6 +25,11 @@ pub mod hello_world {
 #[tokio::main]
 async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
+    let mut ops = ConnectOptions::new(database_url.clone());
+    let db = Database::connect(ops).await.unwrap();
+    assert!(db.ping().await.is_ok());
+    db.clone().close().await;
+    assert!(matches!(db.ping().await, Err(DbErr::ConnectionAcquire(_))));
     let pool = MySqlPool::connect(&database_url).await.unwrap();
 
     let query = Query::new(pool.clone());
