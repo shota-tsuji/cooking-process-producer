@@ -27,12 +27,9 @@ async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
     let mut ops = ConnectOptions::new(database_url.clone());
     let db = Database::connect(ops).await.unwrap();
-    assert!(db.ping().await.is_ok());
-    db.clone().close().await;
-    assert!(matches!(db.ping().await, Err(DbErr::ConnectionAcquire(_))));
     let pool = MySqlPool::connect(&database_url).await.unwrap();
 
-    let query = Query::new(pool.clone());
+    let query = Query::new(db);
     let mutation = Mutation::new(pool.clone());
     let schema = Schema::build(query, mutation, EmptySubscription).finish();
 
