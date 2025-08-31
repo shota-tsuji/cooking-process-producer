@@ -1,0 +1,13 @@
+
+#mutation createStep($recipeDetailData: CreateRecipeStepInput!) {
+#
+#    createStep(recipeDetailData: $recipeDetailData) {
+#        id,
+#    }
+#}
+
+mutation createStep($createRecipeStepData: CreateRecipeStepInput!) {
+    createStep(createRecipeStepData: $createRecipeStepData) {
+        id,
+    }
+}

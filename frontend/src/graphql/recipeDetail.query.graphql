@@ -1,0 +1,15 @@
+query recipeDetail($recipeId: ID!) {
+    recipeDetail(id: $recipeId) {
+        id
+        title 
+        description
+		steps {
+			id
+			description
+			resourceId
+			orderNumber
+			duration
+		}
+    }
+}
+

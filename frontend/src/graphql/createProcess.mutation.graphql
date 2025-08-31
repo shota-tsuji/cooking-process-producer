@@ -1,0 +1,5 @@
+mutation createProcess($recipeIdList: CreateProcessInput!) {
+    createProcess(recipeIdList: $recipeIdList) {
+        id,
+    }
+}

@@ -1,0 +1,58 @@
+/* height is needed to display main content */
+#root {
+  height: 2560px;
+  max-height: 1280px;
+  width: 1280px;
+  max-width: 1280px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 2rem;
+}
+
+.recipe-grid {
+  height: 80%;
+  width: 70%;
+  margin: 10% 15%;
+  position: absolute;
+  text-align: center;
+  overflow: auto; /* if height > parent height, show scroll */
+  box-sizing: border-box;
+}
+
+.process {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.process-bar-vertical {
+  position: absolute;
+  z-index: 0;
+  border-right: 1px solid darkgrey;
+}
+
+.div-horizontal {
+  position: absolute;
+  z-index: 1;
+  border-top: 1px solid darkgrey;
+}
+
+.process-bar-horizontal {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+}
+
+.process-bar-side {
+  position: absolute;
+  z-index: 1;
+  height: auto;
+  top: 0;
+  left: 0;
+}
+
+.process-step {
+  position: absolute;
+  z-index: 2;
+  border-right: 1px solid darkgrey;
+}

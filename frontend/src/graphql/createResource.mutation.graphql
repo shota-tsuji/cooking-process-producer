@@ -1,0 +1,7 @@
+mutation createResource($resourceData: CreateResourceInput!) {
+    createResource(resourceData: $resourceData) {
+        id,
+        name,
+        amount
+    }
+}

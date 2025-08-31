@@ -1,0 +1,7 @@
+mutation updateResource($resourceData: UpdateResourceInput!) {
+    updateResource(resourceData: $resourceData) {
+        id,
+        name,
+        amount
+    }
+}

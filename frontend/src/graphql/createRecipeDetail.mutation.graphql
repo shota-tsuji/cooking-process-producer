@@ -1,0 +1,11 @@
+mutation createRecipeDetail($recipeDetailData: CreateRecipeDetailInput!) {
+	createRecipeDetail(recipeDetailData: $recipeDetailData) {
+		id
+		title
+		description
+		steps {
+			description
+			duration
+		}
+	}
+}
