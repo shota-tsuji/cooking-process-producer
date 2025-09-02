@@ -1,10 +1,10 @@
-use async_graphql::{Context, EmptyMutation, EmptySubscription, Object, Schema, ID};
+use async_graphql::{Context, EmptySubscription, Object, Schema, ID};
 use sea_orm::DatabaseConnection;
 use std::collections::{HashMap, HashSet};
 
 use crate::presentation::graphql::mutation::Mutation;
 use crate::presentation::graphql::object::{
-    HelloResponse, Process, Resource, ResourceInfo, StepResult,
+    Process, Resource, ResourceInfo, StepResult,
 };
 
 pub mod hello_world {
@@ -14,7 +14,7 @@ pub mod hello_world {
 use crate::infrastructure::mysql::entity as db_entity;
 use crate::presentation::graphql::query::hello_world::StepOutput;
 use hello_world::greeter_client::GreeterClient;
-use hello_world::{HelloRequest, ProcessRequest};
+use hello_world::ProcessRequest;
 use sea_orm::*;
 
 use super::object::{Recipe, RecipeDetail, Step};
@@ -150,7 +150,7 @@ impl Query {
                 .map(|step| hello_world::Step {
                     id: step.id.clone(),
                     recipe_id: recipe.id.clone(),
-                    resource_id: step.resource_id.clone(),
+                    resource_id: step.resource_id,
                     duration: step.duration,
                     order_number: step.order_number,
                 })
@@ -161,7 +161,7 @@ impl Query {
             });
         }
 
-        let mut resource_models: Vec<db_entity::resources::Model> =
+        let resource_models: Vec<db_entity::resources::Model> =
             db_entity::resources::Entity::find()
                 .all(&self.db)
                 .await
@@ -189,8 +189,8 @@ impl Query {
             .collect();
 
         let request = tonic::Request::new(ProcessRequest {
-            recipes: grpc_recipes.into(),
-            resources: grpc_resources.into(),
+            recipes: grpc_recipes,
+            resources: grpc_resources,
         });
 
         let mut response = client.process(request).await.unwrap();

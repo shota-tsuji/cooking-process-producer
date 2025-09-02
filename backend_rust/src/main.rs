@@ -1,17 +1,14 @@
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptySubscription, Schema};
 
 use axum::{extract::Extension, routing::get, Router};
 use cpp_backend::presentation::{
     controller::graphql_controller::{graphiql, graphql_handler},
     graphql::{mutation::Mutation, query::Query},
 };
-use hello_world::greeter_client::GreeterClient;
-use hello_world::HelloRequest;
 use http::{
-    header::{ACCEPT, CONTENT_TYPE},
-    HeaderValue, Method,
+    header::{ACCEPT, CONTENT_TYPE}, Method,
 };
-use sea_orm::{ConnectOptions, Database, DbErr};
+use sea_orm::{ConnectOptions, Database};
 use sqlx::mysql::MySqlPool;
 use std::env;
 use std::net::SocketAddr;
@@ -25,7 +22,7 @@ pub mod hello_world {
 #[tokio::main]
 async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
-    let mut ops = ConnectOptions::new(database_url.clone());
+    let ops = ConnectOptions::new(database_url.clone());
     let db = Database::connect(ops).await.unwrap();
     let pool = MySqlPool::connect(&database_url).await.unwrap();
 

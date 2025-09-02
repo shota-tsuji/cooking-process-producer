@@ -1,4 +1,4 @@
-use async_graphql::{Context, EmptyMutation, EmptySubscription, Object, Schema, ID};
+use async_graphql::{Context, Object};
 use sqlx::mysql::MySqlPool;
 use ulid::Ulid;
 
@@ -7,7 +7,7 @@ use crate::presentation::graphql::object::{
     UpdateResourceInput,
 };
 
-use super::object::{CreateRecipeDetailInput, CreateStepInput, Recipe, RecipeDetail, Step};
+use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 
 pub struct Mutation {
     pool: MySqlPool,
@@ -92,7 +92,7 @@ impl Mutation {
             .await
             .unwrap();
         for step in recipe_detail_data.steps.iter() {
-            println!("{:?}", step.clone());
+            println!("{:?}", step);
             sqlx::query("UPDATE steps SET description=?, resource_id=?, order_number=?, duration=? where id=?")
                 .bind(step.description.clone())
                 .bind(step.resource_id)
