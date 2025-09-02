@@ -1,8 +1,8 @@
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use cpp_backend::presentation::graphql::{mutation::Mutation, query::Query};
+use sea_orm::{ConnectOptions, Database};
 use sqlx::MySqlPool;
 use std::env;
-use sea_orm::{ConnectOptions, Database};
 
 #[tokio::main]
 async fn main() {

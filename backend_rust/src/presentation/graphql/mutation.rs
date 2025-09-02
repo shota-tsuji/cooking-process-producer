@@ -1,8 +1,11 @@
-use async_graphql::{Context, EmptyMutation, EmptySubscription, ID, Object, Schema};
+use async_graphql::{Context, EmptyMutation, EmptySubscription, Object, Schema, ID};
 use sqlx::mysql::MySqlPool;
 use ulid::Ulid;
 
-use crate::presentation::graphql::object::{CreateProcessInput, CreateRecipeStepInput, CreateResourceInput, ProcessId, RecipeId, Resource, UpdateResourceInput};
+use crate::presentation::graphql::object::{
+    CreateProcessInput, CreateRecipeStepInput, CreateResourceInput, ProcessId, RecipeId, Resource,
+    UpdateResourceInput,
+};
 
 use super::object::{CreateRecipeDetailInput, CreateStepInput, Recipe, RecipeDetail, Step};
 
@@ -16,7 +19,8 @@ impl Mutation {
     }
 }
 
-const RECIPE_INSERTION_QUERY: &str = r#"INSERT INTO recipes (id, title, description) VALUES (?, ?, ?)"#;
+const RECIPE_INSERTION_QUERY: &str =
+    r#"INSERT INTO recipes (id, title, description) VALUES (?, ?, ?)"#;
 const STEP_INSERTION_QUERY: &str = "INSERT INTO steps (id, recipe_id, description, resource_id, order_number, duration) VALUES (?, ?, ?, ?, ?, ?)";
 
 #[Object]
@@ -28,14 +32,13 @@ impl Mutation {
     ) -> Result<RecipeDetail, String> {
         let recipe_id = Ulid::new().to_string();
         println!("ulid: {}", recipe_id.clone());
-        let query_result =
-            sqlx::query(RECIPE_INSERTION_QUERY)
-                .bind(recipe_id.clone())
-                .bind(recipe_detail_data.title.clone())
-                .bind(recipe_detail_data.description.clone())
-                .execute(&self.pool)
-                .await
-                .map_err(|err| err.to_string());
+        let query_result = sqlx::query(RECIPE_INSERTION_QUERY)
+            .bind(recipe_id.clone())
+            .bind(recipe_detail_data.title.clone())
+            .bind(recipe_detail_data.description.clone())
+            .execute(&self.pool)
+            .await
+            .map_err(|err| err.to_string());
         if let Err(err) = query_result {
             eprintln!("{}", err);
         }
@@ -104,14 +107,17 @@ impl Mutation {
         Ok(recipe_detail_data)
     }
 
-    async fn create_resource(&self, _ctx: &Context<'_>, resource_data: CreateResourceInput) -> Result<Resource, String> {
-        let query_result =
-            sqlx::query(r#"INSERT INTO resources (name, amount) VALUES (?, ?)"#)
-                .bind(resource_data.name.clone())
-                .bind(resource_data.amount)
-                .execute(&self.pool)
-                .await
-                .unwrap();
+    async fn create_resource(
+        &self,
+        _ctx: &Context<'_>,
+        resource_data: CreateResourceInput,
+    ) -> Result<Resource, String> {
+        let query_result = sqlx::query(r#"INSERT INTO resources (name, amount) VALUES (?, ?)"#)
+            .bind(resource_data.name.clone())
+            .bind(resource_data.amount)
+            .execute(&self.pool)
+            .await
+            .unwrap();
 
         let resource = Resource {
             id: query_result.last_insert_id(),
@@ -122,7 +128,11 @@ impl Mutation {
         Ok(resource)
     }
 
-    async fn update_resource(&self, _ctx: &Context<'_>, resource_data: UpdateResourceInput) -> Result<Resource, String> {
+    async fn update_resource(
+        &self,
+        _ctx: &Context<'_>,
+        resource_data: UpdateResourceInput,
+    ) -> Result<Resource, String> {
         let query_result = sqlx::query(r#"UPDATE resources SET name=?, amount=? where id=?"#)
             .bind(resource_data.name.clone())
             .bind(resource_data.amount)
@@ -140,13 +150,16 @@ impl Mutation {
         Ok(resource)
     }
 
-    async fn create_process(&self, _ctx: &Context<'_>, recipe_id_list: CreateProcessInput) -> Result<ProcessId, String> {
-        let query_result =
-            sqlx::query(r#"INSERT INTO processes (name) VALUES (?)"#)
-                .bind("process")
-                .execute(&self.pool)
-                .await
-                .unwrap();
+    async fn create_process(
+        &self,
+        _ctx: &Context<'_>,
+        recipe_id_list: CreateProcessInput,
+    ) -> Result<ProcessId, String> {
+        let query_result = sqlx::query(r#"INSERT INTO processes (name) VALUES (?)"#)
+            .bind("process")
+            .execute(&self.pool)
+            .await
+            .unwrap();
         let process_id = query_result.last_insert_id();
 
         for recipe_id in recipe_id_list.recipe_id_list {
@@ -158,12 +171,14 @@ impl Mutation {
                 .unwrap();
         }
 
-        Ok(ProcessId {
-            id: process_id
-        })
+        Ok(ProcessId { id: process_id })
     }
 
-    async fn create_step(&self, _ctx: &Context<'_>, create_recipe_step_data: CreateRecipeStepInput) -> Result<RecipeId, String> {
+    async fn create_step(
+        &self,
+        _ctx: &Context<'_>,
+        create_recipe_step_data: CreateRecipeStepInput,
+    ) -> Result<RecipeId, String> {
         let recipe_id = create_recipe_step_data.id;
         let steps: Vec<Step> = create_recipe_step_data
             .steps
@@ -190,8 +205,6 @@ impl Mutation {
                 .unwrap();
         }
 
-        Ok(RecipeId {
-            id: recipe_id
-        })
+        Ok(RecipeId { id: recipe_id })
     }
 }

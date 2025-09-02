@@ -5,18 +5,18 @@ use cpp_backend::presentation::{
     controller::graphql_controller::{graphiql, graphql_handler},
     graphql::{mutation::Mutation, query::Query},
 };
+use hello_world::greeter_client::GreeterClient;
+use hello_world::HelloRequest;
 use http::{
     header::{ACCEPT, CONTENT_TYPE},
     HeaderValue, Method,
 };
+use sea_orm::{ConnectOptions, Database, DbErr};
 use sqlx::mysql::MySqlPool;
 use std::env;
 use std::net::SocketAddr;
-use sea_orm::{ConnectOptions, Database, DbErr};
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
-use hello_world::greeter_client::GreeterClient;
-use hello_world::HelloRequest;
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
