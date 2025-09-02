@@ -1,4 +1,4 @@
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptySubscription, Schema};
 
 use axum::{extract::Extension, routing::get, Router};
 use cpp_backend::presentation::{
@@ -6,16 +6,14 @@ use cpp_backend::presentation::{
     graphql::{mutation::Mutation, query::Query},
 };
 use http::{
-    header::{ACCEPT, CONTENT_TYPE},
-    HeaderValue, Method,
+    header::{ACCEPT, CONTENT_TYPE}, Method,
 };
+use sea_orm::{ConnectOptions, Database};
 use sqlx::mysql::MySqlPool;
 use std::env;
 use std::net::SocketAddr;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
-use hello_world::greeter_client::GreeterClient;
-use hello_world::HelloRequest;
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
@@ -24,9 +22,11 @@ pub mod hello_world {
 #[tokio::main]
 async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
+    let ops = ConnectOptions::new(database_url.clone());
+    let db = Database::connect(ops).await.unwrap();
     let pool = MySqlPool::connect(&database_url).await.unwrap();
 
-    let query = Query::new(pool.clone());
+    let query = Query::new(db);
     let mutation = Mutation::new(pool.clone());
     let schema = Schema::build(query, mutation, EmptySubscription).finish();
 
