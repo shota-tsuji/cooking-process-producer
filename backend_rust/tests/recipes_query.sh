@@ -1,0 +1,1 @@
+curl -X POST http://localhost:8080 -H "Content-Type: application/json" -d '{"query":"query recipes { recipes { id title description } }"}' | jq
