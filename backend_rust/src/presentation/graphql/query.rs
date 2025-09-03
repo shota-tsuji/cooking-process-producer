@@ -280,3 +280,48 @@ impl Query {
         Ok(resources)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use async_graphql::EmptyMutation;
+    use sea_orm::{
+        entity::prelude::*, entity::*,
+        DatabaseBackend, MockDatabase, Transaction,
+    };
+    use super::*;
+
+    #[async_std::test]
+    async fn test_example() -> Result<(), DbErr> {
+        let db = MockDatabase::new(DatabaseBackend::MySql)
+            .append_query_results(vec![
+                vec![db_entity::recipes::Model {
+                    id: "1".to_string(),
+                    title: "Test Recipe".to_string(),
+                    description: Some("A test recipe".to_string()),
+                }],
+            ])
+            .into_connection();
+        //let query = Query::new(db);
+        //let schema = Schema::build(query, EmptyMutation, EmptySubscription).finish();
+        //let response = schema.execute(
+        //    r#"
+        //        query {
+        //          recipes {
+        //            id
+        //            title
+        //            description
+        //          }
+        //        }
+        //    "#,
+        //).await
+        //    .into_result()
+        //    .unwrap();
+        let expected: Vec<db_entity::recipes::Model> = vec![db_entity::recipes::Model {
+            id: "1".to_string(),
+            title: "Test Recipe".to_string(),
+            description: Some("A test recipe".to_string()),
+        }];
+        assert_eq!(db_entity::recipes::Entity::find().all(&db).await?, expected);
+        Ok(())
+    }
+}
