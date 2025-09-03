@@ -1,21 +1,24 @@
 use async_graphql::{Context, Object};
-use sqlx::mysql::MySqlPool;
+use sea_orm::QueryFilter;
+use sea_orm::*;
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use ulid::Ulid;
 
 use crate::presentation::graphql::object::{
-    CreateProcessInput, CreateRecipeStepInput, CreateResourceInput, ProcessId, RecipeId, Resource,
+    CreateProcessInput, CreateResourceInput, CreateStepInput, ProcessId, Resource,
     UpdateResourceInput,
 };
 
 use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 
+use crate::infrastructure::mysql::entity as db_entity;
 pub struct Mutation {
-    pool: MySqlPool,
+    db: DatabaseConnection,
 }
 
 impl Mutation {
-    pub fn new(pool: MySqlPool) -> Self {
-        Mutation { pool }
+    pub fn new(db: DatabaseConnection) -> Self {
+        Mutation { db }
     }
 }
 
@@ -23,6 +26,15 @@ const RECIPE_INSERTION_QUERY: &str =
     r#"INSERT INTO recipes (id, title, description) VALUES (?, ?, ?)"#;
 const STEP_INSERTION_QUERY: &str = "INSERT INTO steps (id, recipe_id, description, resource_id, order_number, duration) VALUES (?, ?, ?, ?, ?, ?)";
 
+fn create_step(step_input: &CreateStepInput, id: String) -> Step {
+    Step {
+        id,
+        description: step_input.description.clone(),
+        resource_id: step_input.resource_id,
+        order_number: step_input.order_number,
+        duration: step_input.duration,
+    }
+}
 #[Object]
 impl Mutation {
     async fn create_recipe_detail(
@@ -31,42 +43,33 @@ impl Mutation {
         recipe_detail_data: CreateRecipeDetailInput,
     ) -> Result<RecipeDetail, String> {
         let recipe_id = Ulid::new().to_string();
-        println!("ulid: {}", recipe_id.clone());
-        let query_result = sqlx::query(RECIPE_INSERTION_QUERY)
-            .bind(recipe_id.clone())
-            .bind(recipe_detail_data.title.clone())
-            .bind(recipe_detail_data.description.clone())
-            .execute(&self.pool)
-            .await
-            .map_err(|err| err.to_string());
-        if let Err(err) = query_result {
-            eprintln!("{}", err);
-        }
+        let recipe = db_entity::recipes::ActiveModel {
+            id: Set(recipe_id.clone()),
+            title: Set(recipe_detail_data.title.clone()),
+            description: Set(Some(recipe_detail_data.description.clone())),
+        };
+        let recipe: db_entity::recipes::Model = recipe.insert(&self.db).await.unwrap();
 
         let steps: Vec<Step> = recipe_detail_data
             .steps
             .into_iter()
-            .map(|step| Step {
-                id: Ulid::new().to_string(),
-                description: step.description,
-                resource_id: step.resource_id,
-                order_number: step.order_number,
-                duration: step.duration,
+            .map(|step| create_step(&step, Ulid::new().to_string()))
+            .collect();
+        let step_models: Vec<db_entity::steps::ActiveModel> = steps
+            .iter()
+            .map(|step| db_entity::steps::ActiveModel {
+                id: Set(step.id.clone()),
+                recipe_id: Set(recipe_id.clone()),
+                description: Set(step.description.clone()),
+                resource_id: Set(step.resource_id),
+                order_number: Set(step.order_number),
+                duration: Set(step.duration),
             })
             .collect();
-        for step in steps.iter() {
-            println!("{}", recipe_id.clone());
-            sqlx::query(STEP_INSERTION_QUERY)
-                .bind(step.id.clone())
-                .bind(recipe_id.clone())
-                .bind(step.description.clone())
-                .bind(step.resource_id)
-                .bind(step.order_number)
-                .bind(step.duration)
-                .execute(&self.pool)
-                .await
-                .unwrap();
-        }
+        let _inserted_steps = db_entity::steps::Entity::insert_many(step_models)
+            .exec(&self.db)
+            .await
+            .unwrap();
 
         let recipe_detail = RecipeDetail {
             id: recipe_id.clone(),
@@ -83,26 +86,38 @@ impl Mutation {
         _ctx: &Context<'_>,
         recipe_detail_data: RecipeDetail,
     ) -> Result<RecipeDetail, String> {
-        println!("received: {:?}", recipe_detail_data);
-        let query_result = sqlx::query(r#"UPDATE recipes SET title=?, description=? where id=?"#)
-            .bind(recipe_detail_data.title.clone())
-            .bind(recipe_detail_data.description.clone())
-            .bind(recipe_detail_data.id.clone())
-            .execute(&self.pool)
+        let recipe_model: db_entity::recipes::Model =
+            db_entity::recipes::Entity::find_by_id(recipe_detail_data.id.clone())
+                .one(&self.db)
+                .await
+                .unwrap()
+                .unwrap();
+        let mut recipe: db_entity::recipes::ActiveModel = recipe_model.into();
+        recipe.title = Set(recipe_detail_data.title.clone());
+        recipe.description = Set(Some(recipe_detail_data.description.clone()));
+        let _updated_recipe = recipe.update(&self.db).await.unwrap();
+
+        let _ = db_entity::steps::Entity::delete_many()
+            .filter(db_entity::steps::Column::RecipeId.eq(recipe_detail_data.id.clone()))
+            .exec(&self.db)
             .await
             .unwrap();
-        for step in recipe_detail_data.steps.iter() {
-            println!("{:?}", step);
-            sqlx::query("UPDATE steps SET description=?, resource_id=?, order_number=?, duration=? where id=?")
-                .bind(step.description.clone())
-                .bind(step.resource_id)
-                .bind(step.order_number)
-                .bind(step.duration)
-                .bind(step.id.clone())
-                .execute(&self.pool)
-                .await
-                .unwrap();
-        }
+        let steps: Vec<db_entity::steps::ActiveModel> = recipe_detail_data
+            .steps
+            .iter()
+            .map(|step| db_entity::steps::ActiveModel {
+                id: Set(step.id.clone()),
+                recipe_id: Set(recipe_detail_data.id.clone()),
+                description: Set(step.description.clone()),
+                resource_id: Set(step.resource_id),
+                order_number: Set(step.order_number),
+                duration: Set(step.duration),
+            })
+            .collect();
+        let _ = db_entity::steps::Entity::insert_many(steps)
+            .exec(&self.db)
+            .await
+            .unwrap();
 
         Ok(recipe_detail_data)
     }
@@ -112,15 +127,15 @@ impl Mutation {
         _ctx: &Context<'_>,
         resource_data: CreateResourceInput,
     ) -> Result<Resource, String> {
-        let query_result = sqlx::query(r#"INSERT INTO resources (name, amount) VALUES (?, ?)"#)
-            .bind(resource_data.name.clone())
-            .bind(resource_data.amount)
-            .execute(&self.pool)
-            .await
-            .unwrap();
+        let resource = db_entity::resources::ActiveModel {
+            id: NotSet,
+            name: Set(resource_data.name.clone()),
+            amount: Set(resource_data.amount),
+        };
+        let res = resource.insert(&self.db).await.unwrap();
 
         let resource = Resource {
-            id: query_result.last_insert_id(),
+            id: res.id,
             name: resource_data.name,
             amount: resource_data.amount,
         };
@@ -133,14 +148,16 @@ impl Mutation {
         _ctx: &Context<'_>,
         resource_data: UpdateResourceInput,
     ) -> Result<Resource, String> {
-        let query_result = sqlx::query(r#"UPDATE resources SET name=?, amount=? where id=?"#)
-            .bind(resource_data.name.clone())
-            .bind(resource_data.amount)
-            .bind(resource_data.id)
-            .execute(&self.pool)
-            .await
-            .unwrap();
-
+        let _existing_resource: db_entity::resources::Model =
+            db_entity::resources::Entity::find_by_id(resource_data.id)
+                .one(&self.db)
+                .await
+                .unwrap()
+                .ok_or_else(|| "Resource not found".to_string())?;
+        let mut resource: db_entity::resources::ActiveModel = _existing_resource.into();
+        resource.name = Set(resource_data.name.clone());
+        resource.amount = Set(resource_data.amount);
+        let _updated_resource = resource.update(&self.db).await.unwrap();
         let resource = Resource {
             id: resource_data.id,
             name: resource_data.name,
@@ -155,56 +172,26 @@ impl Mutation {
         _ctx: &Context<'_>,
         recipe_id_list: CreateProcessInput,
     ) -> Result<ProcessId, String> {
-        let query_result = sqlx::query(r#"INSERT INTO processes (name) VALUES (?)"#)
-            .bind("process")
-            .execute(&self.pool)
-            .await
-            .unwrap();
-        let process_id = query_result.last_insert_id();
-
-        for recipe_id in recipe_id_list.recipe_id_list {
-            sqlx::query("INSERT INTO process_regsitrations (process_id, recipe_id) VALUES (?, ?)")
-                .bind(process_id)
-                .bind(recipe_id.clone())
-                .execute(&self.pool)
-                .await
-                .unwrap();
-        }
-
-        Ok(ProcessId { id: process_id })
-    }
-
-    async fn create_step(
-        &self,
-        _ctx: &Context<'_>,
-        create_recipe_step_data: CreateRecipeStepInput,
-    ) -> Result<RecipeId, String> {
-        let recipe_id = create_recipe_step_data.id;
-        let steps: Vec<Step> = create_recipe_step_data
-            .steps
-            .into_iter()
-            .map(|step| Step {
-                id: Ulid::new().to_string(),
-                description: step.description,
-                resource_id: step.resource_id,
-                order_number: step.order_number,
-                duration: step.duration,
+        let process = db_entity::processes::ActiveModel {
+            id: NotSet,
+            name: Set("process".to_string()),
+        };
+        let _res = process.insert(&self.db).await.unwrap();
+        let process_id = _res.id;
+        let recipe_id_list: Vec<db_entity::process_regsitrations::ActiveModel> = recipe_id_list
+            .recipe_id_list
+            .iter()
+            .map(|recipe_id| db_entity::process_regsitrations::ActiveModel {
+                id: NotSet,
+                process_id: Set(process_id),
+                recipe_id: Set(recipe_id.clone()),
             })
             .collect();
-        for step in steps.iter() {
-            println!("{}", recipe_id.clone());
-            sqlx::query(STEP_INSERTION_QUERY)
-                .bind(step.id.clone())
-                .bind(recipe_id.clone())
-                .bind(step.description.clone())
-                .bind(step.resource_id)
-                .bind(step.order_number)
-                .bind(step.duration)
-                .execute(&self.pool)
-                .await
-                .unwrap();
-        }
+        let _inserted = db_entity::process_regsitrations::Entity::insert_many(recipe_id_list)
+            .exec(&self.db)
+            .await
+            .unwrap();
 
-        Ok(RecipeId { id: recipe_id })
+        Ok(ProcessId { id: process_id })
     }
 }
