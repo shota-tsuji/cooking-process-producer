@@ -6,7 +6,8 @@ use cpp_backend::presentation::{
     graphql::{mutation::Mutation, query::Query},
 };
 use http::{
-    header::{ACCEPT, CONTENT_TYPE}, Method,
+    header::{ACCEPT, CONTENT_TYPE},
+    Method,
 };
 use sea_orm::{ConnectOptions, Database};
 use sqlx::mysql::MySqlPool;

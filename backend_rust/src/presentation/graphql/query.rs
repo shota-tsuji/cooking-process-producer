@@ -3,9 +3,7 @@ use sea_orm::DatabaseConnection;
 use std::collections::{HashMap, HashSet};
 
 use crate::presentation::graphql::mutation::Mutation;
-use crate::presentation::graphql::object::{
-    Process, Resource, ResourceInfo, StepResult,
-};
+use crate::presentation::graphql::object::{Process, Resource, ResourceInfo, StepResult};
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
@@ -283,23 +281,17 @@ impl Query {
 
 #[cfg(test)]
 mod tests {
-    use async_graphql::EmptyMutation;
-    use sea_orm::{
-        entity::prelude::*, entity::*,
-        DatabaseBackend, MockDatabase, Transaction,
-    };
     use super::*;
+    use sea_orm::{entity::*, DatabaseBackend, MockDatabase};
 
     #[async_std::test]
     async fn test_example() -> Result<(), DbErr> {
         let db = MockDatabase::new(DatabaseBackend::MySql)
-            .append_query_results(vec![
-                vec![db_entity::recipes::Model {
-                    id: "1".to_string(),
-                    title: "Test Recipe".to_string(),
-                    description: Some("A test recipe".to_string()),
-                }],
-            ])
+            .append_query_results(vec![vec![db_entity::recipes::Model {
+                id: "1".to_string(),
+                title: "Test Recipe".to_string(),
+                description: Some("A test recipe".to_string()),
+            }]])
             .into_connection();
         //let query = Query::new(db);
         //let schema = Schema::build(query, EmptyMutation, EmptySubscription).finish();
