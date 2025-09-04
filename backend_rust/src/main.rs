@@ -10,7 +10,6 @@ use http::{
     Method,
 };
 use sea_orm::{ConnectOptions, Database};
-use sqlx::mysql::MySqlPool;
 use std::env;
 use std::net::SocketAddr;
 use tower::ServiceBuilder;
@@ -24,11 +23,11 @@ pub mod hello_world {
 async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
     let ops = ConnectOptions::new(database_url.clone());
-    let db = Database::connect(ops).await.unwrap();
-    let pool = MySqlPool::connect(&database_url).await.unwrap();
+    let db = Database::connect(ops.clone()).await.unwrap();
+    let db2 = Database::connect(ops.clone()).await.unwrap();
 
     let query = Query::new(db);
-    let mutation = Mutation::new(pool.clone());
+    let mutation = Mutation::new(db2);
     let schema = Schema::build(query, mutation, EmptySubscription).finish();
 
     let origins = ["http://localhost:8000".parse().unwrap()];
