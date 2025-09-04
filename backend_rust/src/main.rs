@@ -11,18 +11,26 @@ use http::{
 };
 use sea_orm::{ConnectOptions, Database};
 use std::env;
-use std::net::SocketAddr;
+use std::fs::File;
+use serde::Deserialize;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
 }
-
+#[derive(Debug, Deserialize)]
+pub struct Config {
+    pub socket_addr: String,
+    pub database_url: String,
+    pub origins: Vec<String>,
+}
 #[tokio::main]
 async fn main() {
-    let database_url = env::var("DATABASE_URL").unwrap();
-    let ops = ConnectOptions::new(database_url.clone());
+    let config_file = File::open("config/local.yaml").unwrap();
+    let config: Config = serde_yaml::from_reader(config_file).unwrap();
+    println!("Database URL: {}", config.database_url);
+    let ops = ConnectOptions::new(config.database_url);
     let db = Database::connect(ops.clone()).await.unwrap();
     let db2 = Database::connect(ops.clone()).await.unwrap();
 
@@ -30,9 +38,8 @@ async fn main() {
     let mutation = Mutation::new(db2);
     let schema = Schema::build(query, mutation, EmptySubscription).finish();
 
-    let origins = ["http://localhost:8000".parse().unwrap()];
     let cors = CorsLayer::new()
-        .allow_origin(origins)
+        .allow_origin(config.origins.iter().map(|o| o.parse().unwrap()).collect::<Vec<_>>())
         .allow_methods([Method::POST])
         .allow_headers(vec![ACCEPT, CONTENT_TYPE]);
     let cors_layer = ServiceBuilder::new().layer(cors);
@@ -42,8 +49,7 @@ async fn main() {
         .layer(cors_layer)
         .layer(Extension(schema));
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
-    axum::Server::bind(&addr)
+    axum::Server::bind(&config.socket_addr.parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
