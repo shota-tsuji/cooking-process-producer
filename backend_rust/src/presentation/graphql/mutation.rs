@@ -22,10 +22,6 @@ impl Mutation {
     }
 }
 
-const RECIPE_INSERTION_QUERY: &str =
-    r#"INSERT INTO recipes (id, title, description) VALUES (?, ?, ?)"#;
-const STEP_INSERTION_QUERY: &str = "INSERT INTO steps (id, recipe_id, description, resource_id, order_number, duration) VALUES (?, ?, ?, ?, ?, ?)";
-
 fn create_step(step_input: &CreateStepInput, id: String) -> Step {
     Step {
         id,
@@ -48,7 +44,7 @@ impl Mutation {
             title: Set(recipe_detail_data.title.clone()),
             description: Set(Some(recipe_detail_data.description.clone())),
         };
-        let recipe: db_entity::recipes::Model = recipe.insert(&self.db).await.unwrap();
+        recipe.insert(&self.db).await.unwrap();
 
         let steps: Vec<Step> = recipe_detail_data
             .steps
@@ -66,7 +62,7 @@ impl Mutation {
                 duration: Set(step.duration),
             })
             .collect();
-        let _inserted_steps = db_entity::steps::Entity::insert_many(step_models)
+        db_entity::steps::Entity::insert_many(step_models)
             .exec(&self.db)
             .await
             .unwrap();
