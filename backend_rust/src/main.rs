@@ -2,6 +2,7 @@ use async_graphql::{EmptySubscription, Schema};
 
 use axum::routing::post;
 use axum::{extract::Extension, Router};
+use cpp_backend::infrastructure::db::db_resource_repository::DbResourceRepository;
 use cpp_backend::presentation::{
     controller::graphql_controller::graphql_handler,
     graphql::{mutation::Mutation, query::Query},
@@ -14,6 +15,7 @@ use sea_orm::{ConnectOptions, Database};
 use serde::Deserialize;
 use std::env;
 use std::fs::File;
+use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 
@@ -35,10 +37,15 @@ async fn main() {
     let ops = ConnectOptions::new(config.database_url);
     let db = Database::connect(ops.clone()).await.unwrap();
     let db2 = Database::connect(ops.clone()).await.unwrap();
+    let db3 = Database::connect(ops.clone()).await.unwrap();
+    // Prepare repository instance and wrap in Arc for sharing
+    let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
 
     let query = Query::new(db);
     let mutation = Mutation::new(db2);
-    let schema = Schema::build(query, mutation, EmptySubscription).finish();
+    let schema = Schema::build(query, mutation, EmptySubscription)
+        .data(resource_repository.clone())
+        .finish();
 
     let cors = CorsLayer::new()
         .allow_origin(

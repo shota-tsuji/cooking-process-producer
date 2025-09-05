@@ -22,9 +22,11 @@ ulid = "1.2.1"
 sea-orm = { version = "1.1.0", features = [ "sqlx-mysql", "runtime-tokio", "macros", "mock" ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
+async-trait = "0.1"
 
 [build-dependencies]
 tonic-build = "0.9"
 
 [dev-dependencies]
 async-std = { version = "1.12", features = ["attributes"] }
+mockall = "0.13.1"

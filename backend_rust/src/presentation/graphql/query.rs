@@ -1,7 +1,11 @@
 use async_graphql::{Context, EmptySubscription, Object, Schema, ID};
 use sea_orm::DatabaseConnection;
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 
+use crate::application::usecase::get_one_resource_by_id_usecase::GetOneResourceByIdUseCase;
+use crate::application::usecase::interface::AbstractUseCase;
+use crate::infrastructure::db::db_resource_repository::DbResourceRepository;
 use crate::presentation::graphql::mutation::Mutation;
 use crate::presentation::graphql::object::{Process, Resource, ResourceInfo, StepResult};
 
@@ -243,22 +247,30 @@ impl Query {
         Ok(process)
     }
 
-    async fn resource(&self, _ctx: &Context<'_>, id: ID) -> Result<Resource, String> {
-        let model: db_entity::resources::Model =
-            db_entity::resources::Entity::find_by_id(id.as_str().parse::<u64>().unwrap())
-                .one(&self.db)
-                .await
-                .map_err(|e| e.to_string())?
-                .ok_or_else(|| "Resource not found".to_string())?;
-        let resource = Resource {
-            id: model.id,
-            name: model.name,
-            amount: model.amount,
-        };
+    async fn resource(&self, ctx: &Context<'_>, id: ID) -> Result<Resource, String> {
+        // Extract repository instance from context
+        let repository = ctx
+            .data::<Arc<DbResourceRepository>>()
+            .map_err(|_| "Repository not found".to_string())?;
 
-        println!("{:?}", &resource);
+        // Parse id to i32 (adjust if your domain uses u64)
+        let resource_id = id
+            .as_str()
+            .parse::<i32>()
+            .map_err(|_| "Invalid id".to_string())?;
 
-        Ok(resource)
+        // Create and execute usecase
+        let usecase = GetOneResourceByIdUseCase::new(&resource_id, repository.as_ref());
+        let result = usecase.execute().await;
+
+        // Map usecase result to GraphQL Resource
+        result
+            .map(|r| Resource {
+                id: r.id as u64,
+                name: r.name,
+                amount: r.amount,
+            })
+            .map_err(|e| e.message)
     }
 
     async fn resources(&self, _ctx: &Context<'_>) -> Result<Vec<Resource>, String> {
