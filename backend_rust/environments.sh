@@ -1,0 +1,1 @@
+export CONFIG_FILE="config/local.yaml"

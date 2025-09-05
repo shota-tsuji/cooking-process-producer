@@ -27,9 +27,10 @@ pub struct Config {
 }
 #[tokio::main]
 async fn main() {
-    let config_file = File::open("config/local.yaml").unwrap();
+    let config_file_path = env::var("CONFIG_FILE").unwrap();
+    let config_file = File::open(config_file_path).unwrap();
     let config: Config = serde_yaml::from_reader(config_file).unwrap();
-    println!("Database URL: {}", config.database_url);
+
     let ops = ConnectOptions::new(config.database_url);
     let db = Database::connect(ops.clone()).await.unwrap();
     let db2 = Database::connect(ops.clone()).await.unwrap();
