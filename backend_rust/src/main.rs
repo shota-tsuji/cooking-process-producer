@@ -1,8 +1,9 @@
 use async_graphql::{EmptySubscription, Schema};
 
-use axum::{extract::Extension, routing::get, Router};
+use axum::routing::post;
+use axum::{extract::Extension, Router};
 use cpp_backend::presentation::{
-    controller::graphql_controller::{graphiql, graphql_handler},
+    controller::graphql_controller::graphql_handler,
     graphql::{mutation::Mutation, query::Query},
 };
 use http::{
@@ -10,9 +11,9 @@ use http::{
     Method,
 };
 use sea_orm::{ConnectOptions, Database};
+use serde::Deserialize;
 use std::env;
 use std::fs::File;
-use serde::Deserialize;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 
@@ -40,13 +41,19 @@ async fn main() {
     let schema = Schema::build(query, mutation, EmptySubscription).finish();
 
     let cors = CorsLayer::new()
-        .allow_origin(config.origins.iter().map(|o| o.parse().unwrap()).collect::<Vec<_>>())
+        .allow_origin(
+            config
+                .origins
+                .iter()
+                .map(|o| o.parse().unwrap())
+                .collect::<Vec<_>>(),
+        )
         .allow_methods([Method::POST])
         .allow_headers(vec![ACCEPT, CONTENT_TYPE]);
     let cors_layer = ServiceBuilder::new().layer(cors);
 
     let app = Router::new()
-        .route("/", get(graphiql).post(graphql_handler))
+        .route("/", post(graphql_handler))
         .layer(cors_layer)
         .layer(Extension(schema));
 
