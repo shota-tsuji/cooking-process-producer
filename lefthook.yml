@@ -1,0 +1,27 @@
+# lefthook.yml
+pre-commit:
+  parallel: true
+  commands:
+    rust-fmt:
+      root: backend_rust
+      #run: cargo fmt --all -- --check
+      run: cargo fmt --all
+    rust-fmt-fix:
+      root: backend_rust
+      run: cargo fmt --all
+    rust-lint:
+      root: backend_rust
+      run: cargo clippy --all-targets --all-features -- -D warnings
+    rust-lint-fix:
+      root: backend_rust
+      run: cargo clippy --all-targets --all-features --fix --allow-dirty -- -D warnings
+    rust-test:
+      root: backend_rust
+      run: cargo test --all --all-features
+
+pre-push:
+  parallel: true
+  commands:
+    rust-test:
+      root: backend_rust
+      run: cargo test --all --all-features
