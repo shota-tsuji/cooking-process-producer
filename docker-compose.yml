@@ -18,7 +18,6 @@ services:
 
   backend:
     image: cpp-backend
-    #container_name: cpp-backend
     restart: always
     build: ./backend_rust
     depends_on:
@@ -27,11 +26,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DATABASE_URL=mysql://admin:admin@mysql:3306/cooking
+      - CONFIG_FILE=/compose-internal.yaml
+    volumes:
+      - ./backend_rust/config/compose-internal.yaml:/compose-internal.yaml:ro
 
   frontend:
     image: cpp-frontend
-    #container_name: cpp-frontend
     restart: always
     build: ./frontend
     depends_on:
@@ -41,7 +41,6 @@ services:
 
   main:
     image: cpp-main
-    #container_name: cpp-main
     restart: always
     build: https://github.com/shota-tsuji/cpp-main.git
     ports:
