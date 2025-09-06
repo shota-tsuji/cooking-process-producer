@@ -1,8 +1,7 @@
-use crate::presentation::graphql::object::Recipe as RecipeObject;
-use crate::presentation::graphql::object::RecipeDetail as RecipeDetailObject;
-use crate::domain::step::Step;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::domain::recipe::Recipe;
+use crate::presentation::graphql::object::Recipe as RecipeObject;
+use crate::presentation::graphql::object::RecipeDetail as RecipeDetailObject;
 
 pub struct RecipeMapper {}
 

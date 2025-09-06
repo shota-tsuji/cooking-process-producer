@@ -10,13 +10,19 @@ pub struct GetOneRecipeByIdUseCase<'a> {
 
 impl<'a> GetOneRecipeByIdUseCase<'a> {
     pub fn new(recipe_id: &'a String, repository: &'a dyn RecipeRepository) -> Self {
-        GetOneRecipeByIdUseCase { recipe_id, repository }
+        GetOneRecipeByIdUseCase {
+            recipe_id,
+            repository,
+        }
     }
 }
 
 impl<'a> AbstractUseCase<Recipe> for GetOneRecipeByIdUseCase<'a> {
     async fn execute(&self) -> Result<Recipe, ApiError> {
-        let recipe = self.repository.get_recipe_by_id(self.recipe_id.to_string()).await;
+        let recipe = self
+            .repository
+            .get_recipe_by_id(self.recipe_id.to_string())
+            .await;
         match recipe {
             Ok(recipe) => Ok(recipe),
             Err(e) => {
@@ -34,11 +40,10 @@ impl<'a> AbstractUseCase<Recipe> for GetOneRecipeByIdUseCase<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockall::predicate::eq;
     use crate::{
-        application::repository::recipe_repository::MockRecipeRepository,
-        domain::recipe::Recipe,
+        application::repository::recipe_repository::MockRecipeRepository, domain::recipe::Recipe,
     };
+    use mockall::predicate::eq;
 
     #[tokio::test]
     async fn test_should_return_one_result() {

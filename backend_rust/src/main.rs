@@ -2,8 +2,8 @@ use async_graphql::{EmptySubscription, Schema};
 
 use axum::routing::post;
 use axum::{extract::Extension, Router};
-use cpp_backend::infrastructure::db::db_resource_repository::DbResourceRepository;
 use cpp_backend::infrastructure::db::db_recipe_repository::DbRecipeRepository;
+use cpp_backend::infrastructure::db::db_resource_repository::DbResourceRepository;
 use cpp_backend::presentation::{
     controller::graphql_controller::graphql_handler,
     graphql::{mutation::Mutation, query::Query},

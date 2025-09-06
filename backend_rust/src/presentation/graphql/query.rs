@@ -3,16 +3,16 @@ use sea_orm::DatabaseConnection;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use crate::application::usecase::get_one_resource_by_id_usecase::GetOneResourceByIdUseCase;
-use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
-use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
-use crate::application::usecase::interface::AbstractUseCase;
-use crate::infrastructure::db::db_resource_repository::DbResourceRepository;
-use crate::infrastructure::db::db_recipe_repository::DbRecipeRepository;
+use crate::adapters::api::recipe_mapper::RecipeDetailMapper;
 use crate::application::mapper::api_mapper::ApiMapper;
+use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
+use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
+use crate::application::usecase::get_one_resource_by_id_usecase::GetOneResourceByIdUseCase;
+use crate::application::usecase::interface::AbstractUseCase;
+use crate::infrastructure::db::db_recipe_repository::DbRecipeRepository;
+use crate::infrastructure::db::db_resource_repository::DbResourceRepository;
 use crate::presentation::graphql::mutation::Mutation;
 use crate::presentation::graphql::object::{Process, Resource, ResourceInfo, StepResult};
-use crate::adapters::api::recipe_mapper::RecipeDetailMapper;
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
@@ -50,7 +50,7 @@ impl Query {
         let result = usecase.execute().await;
         result
             .map_err(|e| e.message)
-            .map( |recipe| RecipeDetailMapper::to_api(recipe))
+            .map(RecipeDetailMapper::to_api)
     }
 
     async fn recipes(&self, _ctx: &Context<'_>) -> Result<Vec<Recipe>, String> {

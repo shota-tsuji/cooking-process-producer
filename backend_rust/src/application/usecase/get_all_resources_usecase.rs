@@ -46,16 +46,32 @@ mod tests {
             .times(1)
             .returning(|| {
                 Ok(vec![
-                    Resource { id: 1, name: String::from("Resource 1"), amount: 10 },
-                    Resource { id: 2, name: String::from("Resource 2"), amount: 20 },
+                    Resource {
+                        id: 1,
+                        name: String::from("Resource 1"),
+                        amount: 10,
+                    },
+                    Resource {
+                        id: 2,
+                        name: String::from("Resource 2"),
+                        amount: 20,
+                    },
                 ])
             });
 
         let get_all_resources_usecase = GetAllResourcesUsecase::new(&resource_repository);
         let result = get_all_resources_usecase.execute().await.unwrap();
 
-        let resource1 = Resource { id: 1, name: String::from("Resource 1"), amount: 10 };
-        let resource2 = Resource { id: 2, name: String::from("Resource 2"), amount: 20 };
+        let resource1 = Resource {
+            id: 1,
+            name: String::from("Resource 1"),
+            amount: 10,
+        };
+        let resource2 = Resource {
+            id: 2,
+            name: String::from("Resource 2"),
+            amount: 20,
+        };
         assert_eq!(vec![resource1, resource2], result);
     }
 }

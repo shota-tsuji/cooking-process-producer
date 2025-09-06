@@ -1,6 +1,6 @@
-use crate::presentation::graphql::object::Step as StepObject;
-use crate::domain::step::Step;
 use crate::application::mapper::api_mapper::ApiMapper;
+use crate::domain::step::Step;
+use crate::presentation::graphql::object::Step as StepObject;
 pub struct StepMapper {}
 
 impl ApiMapper<Step, StepObject> for StepMapper {

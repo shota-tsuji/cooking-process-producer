@@ -1,16 +1,15 @@
-use sea_orm::DatabaseConnection;
 use crate::application::repository::recipe_repository::RecipeRepository;
+use sea_orm::DatabaseConnection;
 
-use crate::infrastructure::mysql::entity as db_entity;
-use async_trait::async_trait;
-use sea_orm::*;
 use crate::domain::recipe::Recipe;
 use crate::domain::resource::Resource;
 use crate::domain::step::Step;
+use crate::infrastructure::mysql::entity as db_entity;
+use async_trait::async_trait;
+use sea_orm::*;
 pub struct DbRecipeRepository {
     pub db_connection: DatabaseConnection,
 }
-
 
 #[async_trait]
 impl RecipeRepository for DbRecipeRepository {
