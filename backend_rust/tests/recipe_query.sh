@@ -1,0 +1,1 @@
+curl -X POST http://localhost:8080 -H "Content-Type: application/json" -d '{"query":"query recipeDetail($recipeId: ID!){ recipeDetail(id:$recipeId){ id title description steps { id description resourceId orderNumber duration } }}","variables":{"recipeId":"01K3ZXM833HHZ06FDTSNBZB3R7"}}' | jq

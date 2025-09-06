@@ -1,0 +1,1 @@
+curl -X POST http://localhost:8080 -H "Content-Type: application/json" -d '{"query":"query resource($resourceId: ID!){ resource(id:$resourceId) { id name amount } }","variables":{"resourceId":1}}' | jq
