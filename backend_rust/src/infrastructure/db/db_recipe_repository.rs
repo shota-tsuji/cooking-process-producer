@@ -5,6 +5,8 @@ use crate::domain::recipe::Recipe;
 use crate::domain::resource::Resource;
 use crate::domain::step::Step;
 use crate::infrastructure::mysql::entity as db_entity;
+use crate::adapters::step_mapper::StepMapper;
+use crate::application::mapper::db_mapper::DbMapper;
 use async_trait::async_trait;
 use sea_orm::*;
 pub struct DbRecipeRepository {
@@ -33,20 +35,10 @@ impl RecipeRepository for DbRecipeRepository {
             .all(&self.db_connection)
             .await
             .unwrap();
-        let steps = steps
+        let steps: Vec<Step> = steps
             .into_iter()
-            .map(|step| Step {
-                id: step.id,
-                description: step.description,
-                order: step.order_number,
-                duration: step.duration,
-                resource: Resource {
-                    id: 1,
-                    name: String::new(),
-                    amount: 0,
-                },
-            })
-            .collect::<Vec<Step>>();
+            .map(StepMapper::to_entity)
+            .collect();
 
         Ok(Recipe {
             id: recipe_id,
