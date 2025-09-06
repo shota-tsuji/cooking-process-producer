@@ -3,7 +3,7 @@ use sea_orm::DatabaseConnection;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use crate::adapters::api::recipe_mapper::RecipeDetailMapper;
+use crate::adapters::recipe_mapper::RecipeDetailMapper;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
 use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
