@@ -4,6 +4,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use crate::application::usecase::get_one_resource_by_id_usecase::GetOneResourceByIdUseCase;
+use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::infrastructure::db::db_resource_repository::DbResourceRepository;
 use crate::presentation::graphql::mutation::Mutation;
@@ -274,18 +275,20 @@ impl Query {
     }
 
     async fn resources(&self, _ctx: &Context<'_>) -> Result<Vec<Resource>, String> {
-        let models: Vec<db_entity::resources::Model> = db_entity::resources::Entity::find()
-            .all(&self.db)
-            .await
-            .map_err(|e| e.to_string())?;
-        let resources = models
+        let repository = _ctx
+            .data::<Arc<DbResourceRepository>>()
+            .map_err(|_| "Repository not found".to_string())?;
+        let usecase = GetAllResourcesUsecase::new(repository.as_ref());
+        let result = usecase.execute().await;
+        let resources = result
+            .map_err(|e| e.message)?
             .into_iter()
-            .map(|resource| Resource {
-                id: resource.id,
-                name: resource.name,
-                amount: resource.amount,
+            .map(|r| Resource {
+                id: r.id as u64,
+                name: r.name,
+                amount: r.amount,
             })
-            .collect::<Vec<Resource>>();
+            .collect();
 
         Ok(resources)
     }

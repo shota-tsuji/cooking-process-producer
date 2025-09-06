@@ -41,7 +41,26 @@ impl ResourceRepository for DbResourceRepository {
     async fn get_all_resources(
         &self,
     ) -> Result<Vec<crate::domain::resource::Resource>, Box<dyn std::error::Error>> {
-        // Implement the logic to fetch all resources from the database
-        unimplemented!()
+        let models = db_entity::resources::Entity::find()
+            .all(&self.db_connection)
+            .await;
+
+        match models {
+            Ok(models) => {
+                let models = models
+                    .into_iter()
+                    .map(|model| crate::domain::resource::Resource {
+                        id: model.id as i32,
+                        name: model.name,
+                        amount: model.amount,
+                    })
+                    .collect::<Vec<crate::domain::resource::Resource>>();
+                Ok(models)
+            },
+            Err(e) => Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                e,
+            ))),
+        }
     }
 }
