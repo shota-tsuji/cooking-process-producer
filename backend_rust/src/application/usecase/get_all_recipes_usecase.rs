@@ -2,6 +2,7 @@ use crate::application::repository::recipe_repository::RecipeRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::error::ApiError;
 use crate::domain::recipe::Recipe;
+use async_trait::async_trait;
 
 pub struct GetAllRecipesUseCase<'a> {
     pub repository: &'a dyn RecipeRepository,
@@ -12,6 +13,8 @@ impl<'a> GetAllRecipesUseCase<'a> {
         GetAllRecipesUseCase { repository }
     }
 }
+
+#[async_trait]
 impl<'a> AbstractUseCase<Vec<Recipe>> for GetAllRecipesUseCase<'a> {
     async fn execute(&self) -> Result<Vec<Recipe>, ApiError> {
         let recipes = self.repository.get_all_recipes().await;

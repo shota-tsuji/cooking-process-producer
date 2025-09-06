@@ -1,6 +1,7 @@
 use crate::application::repository::resource_repository::ResourceRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::resource::Resource;
+use async_trait::async_trait;
 
 pub struct GetAllResourcesUsecase<'a> {
     pub repository: &'a dyn ResourceRepository,
@@ -12,6 +13,7 @@ impl<'a> GetAllResourcesUsecase<'a> {
     }
 }
 
+#[async_trait]
 impl<'a> AbstractUseCase<Vec<Resource>> for GetAllResourcesUsecase<'a> {
     async fn execute(&self) -> Result<Vec<Resource>, crate::domain::error::ApiError> {
         let resources = self.repository.get_all_resources().await;

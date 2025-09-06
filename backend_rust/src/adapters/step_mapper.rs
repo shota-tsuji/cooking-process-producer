@@ -19,8 +19,8 @@ impl ApiMapper<Step, StepObject> for StepMapper {
 }
 
 impl DbMapper<Step, StepModel> for StepMapper {
-    fn to_db(entity: Step) -> StepModel {
-        todo!()
+    fn to_db(_entity: Step) -> StepModel {
+        unimplemented!()
     }
 
     fn to_entity(model: StepModel) -> Step {

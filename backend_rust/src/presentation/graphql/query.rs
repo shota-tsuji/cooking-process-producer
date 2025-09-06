@@ -57,17 +57,17 @@ impl Query {
         let repository = _ctx
             .data::<Arc<DbRecipeRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
-        let usecase = crate::application::usecase::get_all_recipes_usecase::GetAllRecipesUseCase::new(repository.as_ref());
+        let use_case =
+            crate::application::usecase::get_all_recipes_usecase::GetAllRecipesUseCase::new(
+                repository.as_ref(),
+            );
 
-        let recipes_result = usecase.execute().await;
+        let recipes_result = use_case.execute().await;
 
         let Ok(recipes) = recipes_result else {
             return Err("Failed to get recipes".to_string());
         };
-        Ok(recipes
-            .into_iter()
-            .map(RecipeMapper::to_api)
-            .collect())
+        Ok(recipes.into_iter().map(RecipeMapper::to_api).collect())
     }
 
     async fn process(&self, _ctx: &Context<'_>, id: ID) -> Result<Process, String> {
@@ -275,7 +275,7 @@ impl Query {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sea_orm::{entity::*, DatabaseBackend, MockDatabase};
+    use sea_orm::{DatabaseBackend, MockDatabase};
 
     #[async_std::test]
     async fn test_example() -> Result<(), DbErr> {
