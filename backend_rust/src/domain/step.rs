@@ -1,9 +1,9 @@
 use crate::domain::resource::Resource;
 
 pub struct Step {
-    pub id: i32,
+    pub id: String,
     pub description: String,
     pub duration: i32,
     pub resource: Resource,
-    pub order: i32,
+    pub order: u32,
 }

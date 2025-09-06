@@ -4,11 +4,15 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use crate::application::usecase::get_one_resource_by_id_usecase::GetOneResourceByIdUseCase;
+use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
 use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::infrastructure::db::db_resource_repository::DbResourceRepository;
+use crate::infrastructure::db::db_recipe_repository::DbRecipeRepository;
+use crate::application::mapper::api_mapper::ApiMapper;
 use crate::presentation::graphql::mutation::Mutation;
 use crate::presentation::graphql::object::{Process, Resource, ResourceInfo, StepResult};
+use crate::adapters::api::recipe_mapper::RecipeDetailMapper;
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
@@ -37,41 +41,16 @@ impl Query {
 #[Object]
 impl Query {
     async fn recipe_detail(&self, _ctx: &Context<'_>, id: ID) -> Result<RecipeDetail, String> {
-        let recipe: Recipe = db_entity::recipes::Entity::find_by_id(id.as_str().to_string())
-            .one(&self.db)
-            .await
-            .map_err(|e| e.to_string())?
-            .map(|model| Recipe {
-                id: model.id,
-                title: model.title,
-                description: model.description.unwrap_or_default(),
-            })
-            .ok_or_else(|| "Recipe not found".to_string())?;
-        let steps: Vec<Step> = db_entity::steps::Entity::find()
-            .filter(db_entity::steps::Column::RecipeId.eq(id.as_str().to_string()))
-            .all(&self.db)
-            .await
-            .map_err(|e| e.to_string())?
-            .into_iter()
-            .map(|model| Step {
-                id: model.id,
-                description: model.description,
-                resource_id: model.resource_id,
-                order_number: model.order_number,
-                duration: model.duration,
-            })
-            .collect();
+        let repository = _ctx
+            .data::<Arc<DbRecipeRepository>>()
+            .map_err(|_| "Repository not found".to_string())?;
 
-        let recipe_detail = RecipeDetail {
-            id: recipe.id,
-            title: recipe.title,
-            description: recipe.description,
-            steps,
-        };
-
-        println!("{:?}", &recipe_detail);
-
-        Ok(recipe_detail)
+        let id = id.to_string();
+        let usecase = GetOneRecipeByIdUseCase::new(&id, repository.as_ref());
+        let result = usecase.execute().await;
+        result
+            .map_err(|e| e.message)
+            .map( |recipe| RecipeDetailMapper::to_api(recipe))
     }
 
     async fn recipes(&self, _ctx: &Context<'_>) -> Result<Vec<Recipe>, String> {

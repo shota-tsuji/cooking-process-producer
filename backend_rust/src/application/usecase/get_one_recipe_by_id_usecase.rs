@@ -4,19 +4,19 @@ use crate::domain::error::ApiError;
 use crate::domain::recipe::Recipe;
 
 pub struct GetOneRecipeByIdUseCase<'a> {
-    pub recipe_id: &'a i32,
+    pub recipe_id: &'a String,
     pub repository: &'a dyn RecipeRepository,
 }
 
 impl<'a> GetOneRecipeByIdUseCase<'a> {
-    pub fn new(recipe_id: &'a i32, repository: &'a dyn RecipeRepository) -> Self {
+    pub fn new(recipe_id: &'a String, repository: &'a dyn RecipeRepository) -> Self {
         GetOneRecipeByIdUseCase { recipe_id, repository }
     }
 }
 
 impl<'a> AbstractUseCase<Recipe> for GetOneRecipeByIdUseCase<'a> {
     async fn execute(&self) -> Result<Recipe, ApiError> {
-        let recipe = self.repository.get_recipe_by_id(*self.recipe_id).await;
+        let recipe = self.repository.get_recipe_by_id(self.recipe_id.to_string()).await;
         match recipe {
             Ok(recipe) => Ok(recipe),
             Err(e) => {
@@ -35,7 +35,6 @@ impl<'a> AbstractUseCase<Recipe> for GetOneRecipeByIdUseCase<'a> {
 mod tests {
     use super::*;
     use mockall::predicate::eq;
-    use std::io::{Error, ErrorKind};
     use crate::{
         application::repository::recipe_repository::MockRecipeRepository,
         domain::recipe::Recipe,
@@ -47,11 +46,11 @@ mod tests {
         let mut recipe_repository = MockRecipeRepository::new();
         recipe_repository
             .expect_get_recipe_by_id()
-            .with(eq(1))
+            .with(eq(String::from("01K3ZV924ATX4E5P9RZ57HKYF5")))
             .times(1)
             .returning(|_| {
                 Ok(Recipe {
-                    id: 1,
+                    id: String::from("01K3ZV924ATX4E5P9RZ57HKYF5"),
                     name: String::from("Recipe 1"),
                     description: String::from("Ingredient 1"),
                     steps: vec![],
@@ -59,10 +58,12 @@ mod tests {
             });
 
         // when calling usecase
-        let get_one_recipe_by_id_usecase = GetOneRecipeByIdUseCase::new(&1, &recipe_repository);
+        let id = String::from("01K3ZV924ATX4E5P9RZ57HKYF5");
+        let get_one_recipe_by_id_usecase = GetOneRecipeByIdUseCase::new(&id, &recipe_repository);
         let result = get_one_recipe_by_id_usecase.execute().await.unwrap();
+
         // then should return one result
-        assert_eq!(result.id, 1);
-        assert_eq!(result.name, "Recipe 1");
+        assert_eq!(String::from("01K3ZV924ATX4E5P9RZ57HKYF5"), result.id);
+        assert_eq!("Recipe 1", result.name);
     }
 }

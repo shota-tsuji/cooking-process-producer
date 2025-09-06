@@ -3,6 +3,7 @@ use async_graphql::{EmptySubscription, Schema};
 use axum::routing::post;
 use axum::{extract::Extension, Router};
 use cpp_backend::infrastructure::db::db_resource_repository::DbResourceRepository;
+use cpp_backend::infrastructure::db::db_recipe_repository::DbRecipeRepository;
 use cpp_backend::presentation::{
     controller::graphql_controller::graphql_handler,
     graphql::{mutation::Mutation, query::Query},
@@ -38,13 +39,15 @@ async fn main() {
     let db = Database::connect(ops.clone()).await.unwrap();
     let db2 = Database::connect(ops.clone()).await.unwrap();
     let db3 = Database::connect(ops.clone()).await.unwrap();
-    // Prepare repository instance and wrap in Arc for sharing
+    let db4 = Database::connect(ops.clone()).await.unwrap();
     let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
+    let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db4 });
 
     let query = Query::new(db);
     let mutation = Mutation::new(db2);
     let schema = Schema::build(query, mutation, EmptySubscription)
         .data(resource_repository.clone())
+        .data(recipe_repository.clone())
         .finish();
 
     let cors = CorsLayer::new()
