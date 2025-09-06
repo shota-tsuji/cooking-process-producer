@@ -1,0 +1,64 @@
+use crate::application::repository::recipe_repository::RecipeRepository;
+use sea_orm::DatabaseConnection;
+
+use crate::domain::recipe::Recipe;
+use crate::domain::resource::Resource;
+use crate::domain::step::Step;
+use crate::infrastructure::mysql::entity as db_entity;
+use async_trait::async_trait;
+use sea_orm::*;
+pub struct DbRecipeRepository {
+    pub db_connection: DatabaseConnection,
+}
+
+#[async_trait]
+impl RecipeRepository for DbRecipeRepository {
+    async fn get_recipe_by_id(
+        &self,
+        recipe_id: String,
+    ) -> Result<Recipe, Box<dyn std::error::Error>> {
+        let model = db_entity::recipes::Entity::find_by_id(recipe_id.clone())
+            .one(&self.db_connection)
+            .await
+            .unwrap();
+        let Some(recipe) = model else {
+            return Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Recipe not found",
+            )));
+        };
+
+        let steps = db_entity::steps::Entity::find()
+            .filter(db_entity::steps::Column::RecipeId.eq(recipe_id.clone()))
+            .all(&self.db_connection)
+            .await
+            .unwrap();
+        let steps = steps
+            .into_iter()
+            .map(|step| Step {
+                id: step.id,
+                description: step.description,
+                order: step.order_number,
+                duration: step.duration,
+                resource: Resource {
+                    id: 1,
+                    name: String::new(),
+                    amount: 0,
+                },
+            })
+            .collect::<Vec<Step>>();
+
+        Ok(Recipe {
+            id: recipe_id,
+            name: recipe.title,
+            description: recipe.description.unwrap_or_default(),
+            steps,
+        })
+    }
+
+    async fn get_all_recipes(
+        &self,
+    ) -> Result<Vec<crate::domain::recipe::Recipe>, Box<dyn std::error::Error>> {
+        unimplemented!()
+    }
+}

@@ -56,11 +56,8 @@ impl ResourceRepository for DbResourceRepository {
                     })
                     .collect::<Vec<crate::domain::resource::Resource>>();
                 Ok(models)
-            },
-            Err(e) => Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                e,
-            ))),
+            }
+            Err(e) => Err(Box::new(std::io::Error::other(e))),
         }
     }
 }
