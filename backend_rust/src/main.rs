@@ -1,8 +1,10 @@
 use async_graphql::{EmptySubscription, Schema};
 
-use axum::{extract::Extension, routing::get, Router};
+use axum::routing::post;
+use axum::{extract::Extension, Router};
+use cpp_backend::infrastructure::db::db_resource_repository::DbResourceRepository;
 use cpp_backend::presentation::{
-    controller::graphql_controller::{graphiql, graphql_handler},
+    controller::graphql_controller::graphql_handler,
     graphql::{mutation::Mutation, query::Query},
 };
 use http::{
@@ -10,9 +12,10 @@ use http::{
     Method,
 };
 use sea_orm::{ConnectOptions, Database};
+use serde::Deserialize;
 use std::env;
 use std::fs::File;
-use serde::Deserialize;
+use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 
@@ -34,19 +37,30 @@ async fn main() {
     let ops = ConnectOptions::new(config.database_url);
     let db = Database::connect(ops.clone()).await.unwrap();
     let db2 = Database::connect(ops.clone()).await.unwrap();
+    let db3 = Database::connect(ops.clone()).await.unwrap();
+    // Prepare repository instance and wrap in Arc for sharing
+    let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
 
     let query = Query::new(db);
     let mutation = Mutation::new(db2);
-    let schema = Schema::build(query, mutation, EmptySubscription).finish();
+    let schema = Schema::build(query, mutation, EmptySubscription)
+        .data(resource_repository.clone())
+        .finish();
 
     let cors = CorsLayer::new()
-        .allow_origin(config.origins.iter().map(|o| o.parse().unwrap()).collect::<Vec<_>>())
+        .allow_origin(
+            config
+                .origins
+                .iter()
+                .map(|o| o.parse().unwrap())
+                .collect::<Vec<_>>(),
+        )
         .allow_methods([Method::POST])
         .allow_headers(vec![ACCEPT, CONTENT_TYPE]);
     let cors_layer = ServiceBuilder::new().layer(cors);
 
     let app = Router::new()
-        .route("/", get(graphiql).post(graphql_handler))
+        .route("/", post(graphql_handler))
         .layer(cors_layer)
         .layer(Extension(schema));
 
