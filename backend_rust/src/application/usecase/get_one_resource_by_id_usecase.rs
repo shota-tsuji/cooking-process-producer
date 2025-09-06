@@ -2,6 +2,7 @@ use crate::application::repository::resource_repository::ResourceRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::error::ApiError;
 use crate::domain::resource::Resource;
+use async_trait::async_trait;
 
 pub struct GetOneResourceByIdUseCase<'a> {
     // Add fields as necessary, e.g., repository references
@@ -18,6 +19,7 @@ impl<'a> GetOneResourceByIdUseCase<'a> {
     }
 }
 
+#[async_trait]
 impl<'a> AbstractUseCase<Resource> for GetOneResourceByIdUseCase<'a> {
     async fn execute(&self) -> Result<Resource, ApiError> {
         // Implement the logic to get one resource by ID using the repository
@@ -40,7 +42,6 @@ impl<'a> AbstractUseCase<Resource> for GetOneResourceByIdUseCase<'a> {
 mod tests {
     use super::*;
     use mockall::predicate::eq;
-    use std::io::{Error, ErrorKind};
 
     use crate::{
         application::repository::resource_repository::MockResourceRepository,

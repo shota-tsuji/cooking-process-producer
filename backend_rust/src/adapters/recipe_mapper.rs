@@ -1,6 +1,8 @@
 use crate::adapters::step_mapper::StepMapper;
 use crate::application::mapper::api_mapper::ApiMapper;
+use crate::application::mapper::db_mapper::DbMapper;
 use crate::domain::recipe::Recipe;
+use crate::infrastructure::mysql::entity::recipes::Model as RecipeModel;
 use crate::presentation::graphql::object::Recipe as RecipeObject;
 use crate::presentation::graphql::object::RecipeDetail as RecipeDetailObject;
 
@@ -12,6 +14,25 @@ impl ApiMapper<Recipe, RecipeObject> for RecipeMapper {
             id: entity.id,
             description: entity.description,
             title: entity.name,
+        }
+    }
+}
+
+impl DbMapper<Recipe, RecipeModel> for RecipeMapper {
+    fn to_db(entity: Recipe) -> RecipeModel {
+        RecipeModel {
+            id: entity.id,
+            title: entity.name,
+            description: Some(entity.description),
+        }
+    }
+
+    fn to_entity(model: RecipeModel) -> Recipe {
+        Recipe {
+            id: model.id,
+            name: model.title,
+            description: model.description.unwrap_or_default(),
+            steps: vec![],
         }
     }
 }

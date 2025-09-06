@@ -1,6 +1,7 @@
 use crate::application::repository::recipe_repository::RecipeRepository;
 use sea_orm::DatabaseConnection;
 
+use crate::adapters::recipe_mapper::RecipeMapper;
 use crate::adapters::step_mapper::StepMapper;
 use crate::application::mapper::db_mapper::DbMapper;
 use crate::domain::recipe::Recipe;
@@ -8,6 +9,7 @@ use crate::domain::step::Step;
 use crate::infrastructure::mysql::entity as db_entity;
 use async_trait::async_trait;
 use sea_orm::*;
+
 pub struct DbRecipeRepository {
     pub db_connection: DatabaseConnection,
 }
@@ -34,9 +36,14 @@ impl RecipeRepository for DbRecipeRepository {
         })
     }
 
-    async fn get_all_recipes(
-        &self,
-    ) -> Result<Vec<crate::domain::recipe::Recipe>, Box<dyn std::error::Error>> {
-        unimplemented!()
+    async fn get_all_recipes(&self) -> Result<Vec<Recipe>, Box<dyn std::error::Error>> {
+        let recipe_models: Vec<db_entity::recipes::Model> = db_entity::recipes::Entity::find()
+            .all(&self.db_connection)
+            .await?;
+        let recipes = recipe_models
+            .into_iter()
+            .map(RecipeMapper::to_entity)
+            .collect();
+        Ok(recipes)
     }
 }

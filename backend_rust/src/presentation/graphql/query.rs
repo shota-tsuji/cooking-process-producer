@@ -3,7 +3,7 @@ use sea_orm::DatabaseConnection;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use crate::adapters::recipe_mapper::RecipeDetailMapper;
+use crate::adapters::recipe_mapper::{RecipeDetailMapper, RecipeMapper};
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
 use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
@@ -54,21 +54,20 @@ impl Query {
     }
 
     async fn recipes(&self, _ctx: &Context<'_>) -> Result<Vec<Recipe>, String> {
-        let rs: Vec<db_entity::recipes::Model> = db_entity::recipes::Entity::find()
-            .all(&self.db)
-            .await
-            .map_err(|e| e.to_string())?;
-        let recipes = rs
-            .into_iter()
-            .map(|recipe| Recipe {
-                id: recipe.id,
-                title: recipe.title,
-                description: recipe.description.unwrap_or_default(),
-            })
-            .collect();
-        println!("rs: {:?}", recipes);
+        let repository = _ctx
+            .data::<Arc<DbRecipeRepository>>()
+            .map_err(|_| "Repository not found".to_string())?;
+        let use_case =
+            crate::application::usecase::get_all_recipes_usecase::GetAllRecipesUseCase::new(
+                repository.as_ref(),
+            );
 
-        Ok(recipes)
+        let recipes_result = use_case.execute().await;
+
+        let Ok(recipes) = recipes_result else {
+            return Err("Failed to get recipes".to_string());
+        };
+        Ok(recipes.into_iter().map(RecipeMapper::to_api).collect())
     }
 
     async fn process(&self, _ctx: &Context<'_>, id: ID) -> Result<Process, String> {
@@ -276,7 +275,7 @@ impl Query {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sea_orm::{entity::*, DatabaseBackend, MockDatabase};
+    use sea_orm::{DatabaseBackend, MockDatabase};
 
     #[async_std::test]
     async fn test_example() -> Result<(), DbErr> {

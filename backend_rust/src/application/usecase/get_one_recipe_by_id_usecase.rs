@@ -2,6 +2,7 @@ use crate::application::repository::recipe_repository::RecipeRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::error::ApiError;
 use crate::domain::recipe::Recipe;
+use async_trait::async_trait;
 
 pub struct GetOneRecipeByIdUseCase<'a> {
     pub recipe_id: &'a String,
@@ -17,6 +18,7 @@ impl<'a> GetOneRecipeByIdUseCase<'a> {
     }
 }
 
+#[async_trait]
 impl<'a> AbstractUseCase<Recipe> for GetOneRecipeByIdUseCase<'a> {
     async fn execute(&self) -> Result<Recipe, ApiError> {
         let recipe = self
