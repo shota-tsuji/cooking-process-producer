@@ -1,4 +1,4 @@
-use crate::adapters::api::step_mapper::StepMapper;
+use crate::adapters::step_mapper::StepMapper;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::domain::recipe::Recipe;
 use crate::presentation::graphql::object::Recipe as RecipeObject;

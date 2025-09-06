@@ -3,7 +3,7 @@ use sea_orm::DatabaseConnection;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use crate::adapters::api::recipe_mapper::RecipeDetailMapper;
+use crate::adapters::recipe_mapper::RecipeDetailMapper;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
 use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
@@ -40,8 +40,8 @@ impl Query {
 
 #[Object]
 impl Query {
-    async fn recipe_detail(&self, _ctx: &Context<'_>, id: ID) -> Result<RecipeDetail, String> {
-        let repository = _ctx
+    async fn recipe_detail(&self, ctx: &Context<'_>, id: ID) -> Result<RecipeDetail, String> {
+        let repository = ctx
             .data::<Arc<DbRecipeRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
 

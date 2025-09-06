@@ -1,8 +1,9 @@
 use crate::application::repository::recipe_repository::RecipeRepository;
 use sea_orm::DatabaseConnection;
 
+use crate::adapters::step_mapper::StepMapper;
+use crate::application::mapper::db_mapper::DbMapper;
 use crate::domain::recipe::Recipe;
-use crate::domain::resource::Resource;
 use crate::domain::step::Step;
 use crate::infrastructure::mysql::entity as db_entity;
 use async_trait::async_trait;
@@ -17,41 +18,18 @@ impl RecipeRepository for DbRecipeRepository {
         &self,
         recipe_id: String,
     ) -> Result<Recipe, Box<dyn std::error::Error>> {
-        let model = db_entity::recipes::Entity::find_by_id(recipe_id.clone())
-            .one(&self.db_connection)
-            .await
-            .unwrap();
-        let Some(recipe) = model else {
-            return Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                "Recipe not found",
-            )));
-        };
-
-        let steps = db_entity::steps::Entity::find()
-            .filter(db_entity::steps::Column::RecipeId.eq(recipe_id.clone()))
+        let mut recipe_with_steps = db_entity::recipes::Entity::find_by_id(recipe_id.clone())
+            .find_with_related(db_entity::steps::Entity)
             .all(&self.db_connection)
             .await
             .unwrap();
-        let steps = steps
-            .into_iter()
-            .map(|step| Step {
-                id: step.id,
-                description: step.description,
-                order: step.order_number,
-                duration: step.duration,
-                resource: Resource {
-                    id: 1,
-                    name: String::new(),
-                    amount: 0,
-                },
-            })
-            .collect::<Vec<Step>>();
+        let (recipe_model, step_models) = recipe_with_steps.pop().unwrap();
+        let steps: Vec<Step> = step_models.into_iter().map(StepMapper::to_entity).collect();
 
         Ok(Recipe {
             id: recipe_id,
-            name: recipe.title,
-            description: recipe.description.unwrap_or_default(),
+            name: recipe_model.title,
+            description: recipe_model.description.unwrap_or_default(),
             steps,
         })
     }
