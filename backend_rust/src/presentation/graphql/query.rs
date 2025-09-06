@@ -40,8 +40,8 @@ impl Query {
 
 #[Object]
 impl Query {
-    async fn recipe_detail(&self, _ctx: &Context<'_>, id: ID) -> Result<RecipeDetail, String> {
-        let repository = _ctx
+    async fn recipe_detail(&self, ctx: &Context<'_>, id: ID) -> Result<RecipeDetail, String> {
+        let repository = ctx
             .data::<Arc<DbRecipeRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
 

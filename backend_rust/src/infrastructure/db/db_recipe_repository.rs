@@ -1,11 +1,11 @@
 use crate::application::repository::recipe_repository::RecipeRepository;
 use sea_orm::DatabaseConnection;
 
+use crate::adapters::step_mapper::StepMapper;
+use crate::application::mapper::db_mapper::DbMapper;
 use crate::domain::recipe::Recipe;
 use crate::domain::step::Step;
 use crate::infrastructure::mysql::entity as db_entity;
-use crate::adapters::step_mapper::StepMapper;
-use crate::application::mapper::db_mapper::DbMapper;
 use async_trait::async_trait;
 use sea_orm::*;
 pub struct DbRecipeRepository {
@@ -24,10 +24,7 @@ impl RecipeRepository for DbRecipeRepository {
             .await
             .unwrap();
         let (recipe_model, step_models) = recipe_with_steps.pop().unwrap();
-        let steps: Vec<Step> = step_models
-            .into_iter()
-            .map(StepMapper::to_entity)
-            .collect();
+        let steps: Vec<Step> = step_models.into_iter().map(StepMapper::to_entity).collect();
 
         Ok(Recipe {
             id: recipe_id,

@@ -1,8 +1,8 @@
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::mapper::db_mapper::DbMapper;
-use crate::infrastructure::mysql::entity::steps::Model as StepModel;
-use crate::domain::step::Step;
 use crate::domain::resource::Resource;
+use crate::domain::step::Step;
+use crate::infrastructure::mysql::entity::steps::Model as StepModel;
 use crate::presentation::graphql::object::Step as StepObject;
 pub struct StepMapper {}
 
