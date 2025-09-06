@@ -1,3 +1,4 @@
+use crate::adapters::api::step_mapper::StepMapper;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::domain::recipe::Recipe;
 use crate::presentation::graphql::object::Recipe as RecipeObject;
@@ -22,7 +23,7 @@ impl ApiMapper<Recipe, RecipeDetailObject> for RecipeDetailMapper {
             id: entity.id,
             description: entity.description,
             title: entity.name,
-            steps: Vec::new(),
+            steps: entity.steps.into_iter().map(StepMapper::to_api).collect(),
         }
     }
 }

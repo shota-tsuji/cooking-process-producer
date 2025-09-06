@@ -16,7 +16,7 @@ impl RecipeRepository for DbRecipeRepository {
     async fn get_recipe_by_id(
         &self,
         recipe_id: String,
-    ) -> Result<crate::domain::recipe::Recipe, Box<dyn std::error::Error>> {
+    ) -> Result<Recipe, Box<dyn std::error::Error>> {
         let model = db_entity::recipes::Entity::find_by_id(recipe_id.clone())
             .one(&self.db_connection)
             .await
