@@ -1,4 +1,4 @@
 socket_addr: "0.0.0.0:8080"
 database_url: "mysql://admin:admin@mysql:3306/cooking"
 origins:
-  - "http://frontend:8000"
+  - "http://localhost:8000"
