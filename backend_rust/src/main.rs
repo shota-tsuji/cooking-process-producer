@@ -19,6 +19,9 @@ use std::fs::File;
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
+use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
+use tower_http::trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer};
+use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt};
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
@@ -31,6 +34,23 @@ pub struct Config {
 }
 #[tokio::main]
 async fn main() {
+    // Setup logging
+    //LogTracer::init().expect("Failed to set logger");
+    let filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| "info,tower_http=debug,async_graphql=debug".into());
+    tracing_subscriber::registry()
+        .with(filter)
+        .with(
+            tracing_subscriber::fmt::layer()
+                .json()
+                .with_span_events(FmtSpan::CLOSE)
+                .with_current_span(true)
+                .with_target(false)
+                .with_thread_ids(true)
+                .with_thread_names(true),
+        )
+        .init();
+
     let config_file_path = env::var("CONFIG_FILE").unwrap();
     let config_file = File::open(config_file_path).unwrap();
     let config: Config = serde_yaml::from_reader(config_file).unwrap();
@@ -65,6 +85,28 @@ async fn main() {
     let app = Router::new()
         .route("/", post(graphql_handler))
         .layer(cors_layer)
+        .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
+        .layer(PropagateRequestIdLayer::x_request_id())
+        // Add tracing layer for structured logging
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(|request: &http::Request<_>| {
+                    let request_id = request
+                        .headers()
+                        .get("x-request-id")
+                        .and_then(|v| v.to_str().ok())
+                        .unwrap_or("unknown");
+
+                    tracing::info_span!(
+                        "http_request",
+                        method = ?request.method(),
+                        uri = ?request.uri(),
+                        request_id = %request_id
+                    )
+                })
+                .on_request(DefaultOnRequest::new().level(tracing::Level::INFO))
+                .on_response(DefaultOnResponse::new().level(tracing::Level::INFO)),
+        )
         .layer(Extension(schema));
 
     axum::Server::bind(&config.socket_addr.parse().unwrap())
