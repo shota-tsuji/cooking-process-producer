@@ -20,7 +20,7 @@ use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
-use tower_http::trace::{DefaultOnRequest, DefaultOnResponse, TraceLayer};
+use tower_http::trace::{DefaultOnRequest, TraceLayer};
 use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt};
 
 pub mod hello_world {
@@ -56,14 +56,13 @@ async fn main() {
     let config: Config = serde_yaml::from_reader(config_file).unwrap();
 
     let ops = ConnectOptions::new(config.database_url);
-    let db = Database::connect(ops.clone()).await.unwrap();
     let db2 = Database::connect(ops.clone()).await.unwrap();
     let db3 = Database::connect(ops.clone()).await.unwrap();
     let db4 = Database::connect(ops.clone()).await.unwrap();
     let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
     let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db4 });
 
-    let query = Query::new(db);
+    let query = Query {};
     let mutation = Mutation::new(db2);
     let schema = Schema::build(query, mutation, EmptySubscription)
         .data(resource_repository.clone())
@@ -104,8 +103,7 @@ async fn main() {
                         request_id = %request_id
                     )
                 })
-                .on_request(DefaultOnRequest::new().level(tracing::Level::INFO))
-                .on_response(DefaultOnResponse::new().level(tracing::Level::INFO)),
+                .on_request(DefaultOnRequest::new().level(tracing::Level::INFO)),
         )
         .layer(Extension(schema));
 

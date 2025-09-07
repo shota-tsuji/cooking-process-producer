@@ -1,6 +1,4 @@
 use async_graphql::{Context, EmptySubscription, Object, Schema, ID};
-use sea_orm::DatabaseConnection;
-use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use crate::adapters::recipe_mapper::{RecipeDetailMapper, RecipeMapper};
@@ -18,25 +16,11 @@ pub mod hello_world {
     tonic::include_proto!("helloworld");
 }
 
-use crate::infrastructure::mysql::entity as db_entity;
-use crate::presentation::graphql::query::hello_world::StepOutput;
-use hello_world::greeter_client::GreeterClient;
-use hello_world::ProcessRequest;
-use sea_orm::*;
-
-use super::object::{Recipe, RecipeDetail, Step};
+use super::object::{Recipe, RecipeDetail};
 
 pub type QuerySchema = Schema<Query, Mutation, EmptySubscription>;
 
-pub struct Query {
-    db: DatabaseConnection,
-}
-
-impl Query {
-    pub fn new(db: DatabaseConnection) -> Self {
-        Query { db }
-    }
-}
+pub struct Query {}
 
 #[Object]
 impl Query {
@@ -70,8 +54,29 @@ impl Query {
         Ok(recipes.into_iter().map(RecipeMapper::to_api).collect())
     }
 
-    async fn process(&self, _ctx: &Context<'_>, id: ID) -> Result<Process, String> {
-        let mut client = GreeterClient::connect("http://main:50051").await.unwrap();
+    async fn process(&self, _ctx: &Context<'_>, _id: ID) -> Result<Process, String> {
+        let steps_0 = vec![StepResult {
+            id: "abc".to_string(),
+            recipe_id: String::from("00000000-0000-0000-0000-000000000000"),
+            resource_id: 1u64,
+            start_time: 10,
+            duration: 5,
+            order_number: 0,
+            timeline_index: 1,
+            description: String::from("野菜を切る"),
+            recipe_name: String::from("カレー"),
+        }];
+        let resource_info0 = ResourceInfo {
+            id: 1u64,
+            name: String::from("人手"),
+            steps: steps_0,
+        };
+        let resource_infos = vec![resource_info0];
+        let process = Process { resource_infos };
+        Ok(process)
+
+        /*
+        let mut _client = GreeterClient::connect("http://main:50051").await.unwrap();
 
         println!("step0");
         let recipe_models: Vec<db_entity::recipes::Model> = db_entity::recipes::Entity::find()
@@ -174,7 +179,7 @@ impl Query {
             resources: grpc_resources,
         });
 
-        let mut response = client.process(request).await.unwrap();
+        let mut response = _client.process(request).await.unwrap();
         println!("{:?}", response.get_ref().steps);
         println!("{:?}", response.get_ref().resource_infos);
 
@@ -217,13 +222,10 @@ impl Query {
                 });
             }
         }
-        println!("{:?}", resource_infos);
 
         let process = Process { resource_infos };
-
-        println!("step4");
-        //Ok(recipeDetails)
         Ok(process)
+         */
     }
 
     async fn resource(&self, ctx: &Context<'_>, id: ID) -> Result<Resource, String> {
@@ -274,7 +276,9 @@ impl Query {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+
+    use crate::infrastructure::mysql::entity as db_entity;
+    use sea_orm::*;
     use sea_orm::{DatabaseBackend, MockDatabase};
 
     #[async_std::test]
