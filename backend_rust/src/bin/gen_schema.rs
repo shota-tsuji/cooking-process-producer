@@ -7,9 +7,8 @@ use std::env;
 async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
     let ops = ConnectOptions::new(database_url.clone());
-    let db = Database::connect(ops.clone()).await.unwrap();
     let db2 = Database::connect(ops.clone()).await.unwrap();
-    let query = Query::new(db);
+    let query = Query {};
     let mutation = Mutation::new(db2);
     let schema = Schema::build(query, mutation, EmptySubscription).finish();
     print!("{}", schema.sdl());
