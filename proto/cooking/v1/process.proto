@@ -1,15 +1,15 @@
 syntax = "proto3";
 
-package cooking.v1;
+package proto.cooking.v1;
 
 service ProcessService {
   // Request process data and server calculates step start times
-  rpc CalculateProcess(ProcessRequest) returns (ProcessResponse);
+  rpc CalculateProcess(CalculateProcessRequest) returns (CalculateProcessResponse);
 }
 
 
 // Request: Client provides recipes with steps (no start_time yet)
-message ProcessRequest {
+message CalculateProcessRequest {
   repeated Recipe recipes = 1;
 }
 
@@ -31,7 +31,7 @@ message Resource {
 
 
 // Response: Server attaches start_time to each step
-message ProcessResponse {
+message CalculateProcessResponse {
   repeated RecipeWithSchedule recipes = 1;
 }
 

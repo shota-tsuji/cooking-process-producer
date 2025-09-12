@@ -1,7 +1,7 @@
 use async_graphql::{EmptySubscription, Schema};
 
 use axum::routing::post;
-use axum::{extract::Extension, Router};
+use axum::{Router, extract::Extension};
 use cpp_backend::infrastructure::db::db_recipe_repository::DbRecipeRepository;
 use cpp_backend::infrastructure::db::db_resource_repository::DbResourceRepository;
 use cpp_backend::presentation::{
@@ -9,8 +9,8 @@ use cpp_backend::presentation::{
     graphql::{mutation::Mutation, query::Query},
 };
 use http::{
-    header::{ACCEPT, CONTENT_TYPE},
     Method,
+    header::{ACCEPT, CONTENT_TYPE},
 };
 use sea_orm::{ConnectOptions, Database};
 use serde::Deserialize;
@@ -24,7 +24,7 @@ use tower_http::trace::{DefaultOnRequest, TraceLayer};
 use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt};
 
 pub mod hello_world {
-    tonic::include_proto!("helloworld");
+    tonic::include_proto!("proto.cooking.v1");
 }
 #[derive(Debug, Deserialize)]
 pub struct Config {

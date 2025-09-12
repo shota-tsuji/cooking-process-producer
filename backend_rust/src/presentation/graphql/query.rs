@@ -1,4 +1,4 @@
-use async_graphql::{Context, EmptySubscription, Object, Schema, ID};
+use async_graphql::{Context, EmptySubscription, ID, Object, Schema};
 use std::sync::Arc;
 
 use crate::adapters::recipe_mapper::{RecipeDetailMapper, RecipeMapper};
@@ -12,9 +12,9 @@ use crate::infrastructure::db::db_resource_repository::DbResourceRepository;
 use crate::presentation::graphql::mutation::Mutation;
 use crate::presentation::graphql::object::{Process, Resource, ResourceInfo, StepResult};
 
-pub mod hello_world {
-    tonic::include_proto!("helloworld");
-}
+//pub mod hello_world {
+//    tonic::include_proto!("proto", "cooking", "v1");
+//}
 
 use super::object::{Recipe, RecipeDetail};
 

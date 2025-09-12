@@ -1,7 +1,7 @@
 [package]
 name = "cpp-backend"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -9,15 +9,15 @@ edition = "2021"
 anyhow = "1.0"
 sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "mysql", "macros", "uuid"] }
 axum = { version = "0.6.18", features = [ "tokio", "macros"]}
-tokio = { version = "1.0", features = ["full"] }
+#tokio = { version = "1.0", features = ["full"] }
 async-graphql = "5.0"
 async-graphql-axum = "5.0"
 tower-http = { version = "0.4.0", features = [ "cors","trace", "request-id"]}
 tower = "0.4.13"
 http = "0.2.9"
 uuid = { version = "1.3.2", features = [ "v4" ]}
-tonic = "0.9"
-prost = "0.11"
+tonic = "0.14"
+prost = "0.14"
 ulid = "1.2.1"
 sea-orm = { version = "1.1.0", features = [ "sqlx-mysql", "runtime-tokio", "macros", "mock" ] }
 serde = { version = "1.0", features = ["derive"] }
@@ -26,10 +26,20 @@ async-trait = "0.1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 tracing-log = "0.2"
+#tonic-build = "0.14"
+tokio = { version = "1.44.0", features = ["macros", "rt-multi-thread"] }
+tokio-stream = "0.1.17"
+tonic-prost-build = "0.14"
+tonic-prost = "0.14"
 
 [build-dependencies]
-tonic-build = "0.9"
+tonic-prost-build = "0.14"
+#tonic-build = "0.14"
 
 [dev-dependencies]
 async-std = { version = "1.12", features = ["attributes"] }
 mockall = "0.13.1"
+
+[[bin]]
+name = "grpc_build"
+path = "build.rs"
