@@ -65,7 +65,7 @@ async fn main() {
     let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
     let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db4 });
     let process_registration_repository = Arc::new(
-        cpp_backend::adapters::db::db_process_registration_repository::DbProcessRegistrationRepository {
+        cpp_backend::adapters::db::db_process_registration_repository::DbProcessRepository {
             db_connection: db5,
         },
     );

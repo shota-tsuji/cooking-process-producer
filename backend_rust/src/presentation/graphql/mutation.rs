@@ -1,4 +1,4 @@
-use crate::adapters::db::db_process_registration_repository::DbProcessRegistrationRepository;
+use crate::adapters::db::db_process_registration_repository::DbProcessRepository;
 use crate::application::usecase::calculate_one_process_use_case::CalculateOneProcessUseCase;
 use crate::presentation::graphql::object::{
     CreateProcessInput, CreateResourceInput, CreateStepInput, ProcessId, Resource,
@@ -172,33 +172,13 @@ impl Mutation {
         ctx: &Context<'_>,
         recipe_id_list: CreateProcessInput,
     ) -> Result<ProcessId, String> {
-        let process = db_entity::processes::ActiveModel {
-            id: NotSet,
-            name: Set("process".to_string()),
-        };
-        let _res = process.insert(&self.db).await.unwrap();
-        let process_id = _res.id;
-
         let repository = ctx
-            .data::<Arc<DbProcessRegistrationRepository>>()
+            .data::<Arc<DbProcessRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
-        let usecase =
+        let use_case =
             CalculateOneProcessUseCase::new(repository.as_ref(), &recipe_id_list.recipe_id_list);
-        let _result = usecase.execute().await.unwrap();
-        let recipe_id_list: Vec<db_entity::process_regsitrations::ActiveModel> = recipe_id_list
-            .recipe_id_list
-            .iter()
-            .map(|recipe_id| db_entity::process_regsitrations::ActiveModel {
-                id: NotSet,
-                process_id: Set(process_id),
-                recipe_id: Set(recipe_id.clone()),
-            })
-            .collect();
-        let _inserted = db_entity::process_regsitrations::Entity::insert_many(recipe_id_list)
-            .exec(&self.db)
-            .await
-            .unwrap();
+        let _process_id = use_case.execute().await.unwrap();
 
-        Ok(ProcessId { id: process_id })
+        Ok(ProcessId { id: 123 })
     }
 }

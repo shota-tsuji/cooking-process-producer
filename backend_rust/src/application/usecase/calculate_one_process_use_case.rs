@@ -1,18 +1,15 @@
-use crate::application::repository::process_registrations_repository::ProcessRegistrationRepository;
+use crate::application::repository::process_repository::ProcessRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::error::ApiError;
 use async_trait::async_trait;
 
 pub struct CalculateOneProcessUseCase<'a> {
     pub recipe_id_list: &'a Vec<String>,
-    pub repository: &'a dyn ProcessRegistrationRepository,
+    pub repository: &'a dyn ProcessRepository,
 }
 
 impl<'a> CalculateOneProcessUseCase<'a> {
-    pub fn new(
-        repository: &'a dyn ProcessRegistrationRepository,
-        recipe_id_list: &'a Vec<String>,
-    ) -> Self {
+    pub fn new(repository: &'a dyn ProcessRepository, recipe_id_list: &'a Vec<String>) -> Self {
         CalculateOneProcessUseCase {
             repository,
             recipe_id_list,
@@ -23,12 +20,13 @@ impl<'a> CalculateOneProcessUseCase<'a> {
 #[async_trait]
 impl<'a> AbstractUseCase<String> for CalculateOneProcessUseCase<'a> {
     async fn execute(&self) -> Result<String, ApiError> {
+        let process_id = 125;
         let recipe = self
             .repository
-            .register_process(123, self.recipe_id_list.to_vec())
+            .register_process(process_id, self.recipe_id_list.to_vec())
             .await;
         match recipe {
-            Ok(_) => Ok(123.to_string()),
+            Ok(_) => Ok(process_id.to_string()),
             Err(e) => {
                 let e = ApiError {
                     code: 400,
