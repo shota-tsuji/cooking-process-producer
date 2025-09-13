@@ -2,9 +2,9 @@ use async_graphql::{EmptySubscription, Schema};
 
 use axum::routing::post;
 use axum::{Router, extract::Extension};
+use cpp_backend::adapters::db::db_process_registration_repository::DbProcessRepository;
 use cpp_backend::infrastructure::db::db_recipe_repository::DbRecipeRepository;
 use cpp_backend::infrastructure::db::db_resource_repository::DbResourceRepository;
-use cpp_backend::adapters::db::db_process_registration_repository::DbProcessRepository;
 use cpp_backend::presentation::{
     controller::graphql_controller::graphql_handler,
     graphql::{mutation::Mutation, query::Query},
@@ -67,9 +67,9 @@ async fn main() {
     let recipe_repository = Arc::new(DbRecipeRepository {
         db_connection: db.clone(),
     });
-    let process_registration_repository = Arc::new(
-        DbProcessRepository { db_connection: db.clone() },
-    );
+    let process_registration_repository = Arc::new(DbProcessRepository {
+        db_connection: db.clone(),
+    });
     let process_client = proto::process_service_client::ProcessServiceClient::connect(
         config.process_grpc_server_url,
     )
