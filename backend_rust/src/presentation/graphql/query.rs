@@ -277,7 +277,7 @@ impl Query {
 #[cfg(test)]
 mod tests {
 
-    use crate::infrastructure::mysql::entity as db_entity;
+    use crate::adapters::db::mysql::entity as db_entity;
     use sea_orm::*;
     use sea_orm::{DatabaseBackend, MockDatabase};
 

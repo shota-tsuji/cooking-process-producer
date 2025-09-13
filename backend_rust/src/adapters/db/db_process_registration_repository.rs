@@ -1,5 +1,5 @@
+use crate::adapters::db::mysql::entity as db_entity;
 use crate::application::repository::process_repository::ProcessRepository;
-use crate::infrastructure::mysql::entity as db_entity;
 use async_trait::async_trait;
 use sea_orm::*;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};

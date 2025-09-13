@@ -15,7 +15,7 @@ use crate::application::usecase::interface::AbstractUseCase;
 
 use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 
-use crate::infrastructure::mysql::entity as db_entity;
+use crate::adapters::db::mysql::entity as db_entity;
 pub struct Mutation {
     db: DatabaseConnection,
 }
