@@ -170,13 +170,12 @@ impl Mutation {
     async fn create_process(
         &self,
         ctx: &Context<'_>,
-        recipe_id_list: CreateProcessInput,
+        input: CreateProcessInput,
     ) -> Result<ProcessId, String> {
         let repository = ctx
             .data::<Arc<DbProcessRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
-        let use_case =
-            CalculateOneProcessUseCase::new(repository.as_ref(), &recipe_id_list.recipe_id_list);
+        let use_case = CalculateOneProcessUseCase::new(repository.as_ref(), &input.recipe_id_list);
         let _process_id = use_case.execute().await.unwrap();
 
         Ok(ProcessId { id: 123 })
