@@ -1,10 +1,16 @@
 FROM debian:bullseye
 
-RUN apt update && apt install -y python3-dev python3-pip python3-venv
+RUN apt update && apt install -y python3-dev python3-pip python3-venv curl
 
-RUN python3 -m pip install -U --user ortools grpcio-tools grpcio
+# Install uv
+RUN pip3 install uv
 
 COPY . .
-RUN python3 -m grpc_tools.protoc -I./proto --python_out=. --pyi_out=. --grpc_python_out=. helloworld.proto
 
-CMD ["python3", "/recipe.py"]
+# Install dependencies using uv
+RUN uv pip install -r requirements.txt || uv pip install --system .
+
+#RUN python3 -m grpc_tools.protoc -I./proto --python_out=. --pyi_out=. --grpc_python_out=. helloworld.proto
+
+#CMD ["uv", "run", "src/recipe.py"]
+CMD ["uv", "run", "recipe.py"]
