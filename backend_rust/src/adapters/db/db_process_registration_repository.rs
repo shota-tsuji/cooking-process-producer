@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use crate::application::repository::process_repository::ProcessRepository;
 use crate::infrastructure::mysql::entity as db_entity;
 use async_trait::async_trait;
 use sea_orm::*;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
+use std::sync::Arc;
 
 pub struct DbProcessRepository {
     pub db_connection: Arc<DatabaseConnection>,

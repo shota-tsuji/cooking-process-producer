@@ -60,8 +60,12 @@ async fn main() {
     let ops = ConnectOptions::new(config.database_url);
     let db = Arc::new(Database::connect(ops.clone()).await.unwrap());
     let db2 = Database::connect(ops.clone()).await.unwrap();
-    let resource_repository = Arc::new(DbResourceRepository { db_connection: db.clone() });
-    let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db.clone() });
+    let resource_repository = Arc::new(DbResourceRepository {
+        db_connection: db.clone(),
+    });
+    let recipe_repository = Arc::new(DbRecipeRepository {
+        db_connection: db.clone(),
+    });
     let process_registration_repository = Arc::new(
         cpp_backend::adapters::db::db_process_registration_repository::DbProcessRepository {
             db_connection: db.clone(),

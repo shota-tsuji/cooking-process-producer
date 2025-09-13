@@ -1,9 +1,9 @@
-use std::sync::Arc;
 use crate::application::repository::resource_repository::ResourceRepository;
 use crate::infrastructure::mysql::entity as db_entity;
 use async_trait::async_trait;
 use sea_orm::DatabaseConnection;
 use sea_orm::*;
+use std::sync::Arc;
 
 pub struct DbResourceRepository {
     pub db_connection: Arc<DatabaseConnection>,
