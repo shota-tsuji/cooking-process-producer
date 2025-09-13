@@ -1,13 +1,17 @@
-use async_graphql::{Context, Object};
-use sea_orm::QueryFilter;
-use sea_orm::*;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
-use ulid::Ulid;
-
+use crate::adapters::db::db_process_registration_repository::DbProcessRepository;
+use crate::application::usecase::calculate_one_process_use_case::CalculateOneProcessUseCase;
 use crate::presentation::graphql::object::{
     CreateProcessInput, CreateResourceInput, CreateStepInput, ProcessId, Resource,
     UpdateResourceInput,
 };
+use async_graphql::{Context, Object};
+use sea_orm::QueryFilter;
+use sea_orm::*;
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
+use std::sync::Arc;
+use ulid::Ulid;
+
+use crate::application::usecase::interface::AbstractUseCase;
 
 use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 
@@ -165,29 +169,16 @@ impl Mutation {
 
     async fn create_process(
         &self,
-        _ctx: &Context<'_>,
+        ctx: &Context<'_>,
         recipe_id_list: CreateProcessInput,
     ) -> Result<ProcessId, String> {
-        let process = db_entity::processes::ActiveModel {
-            id: NotSet,
-            name: Set("process".to_string()),
-        };
-        let _res = process.insert(&self.db).await.unwrap();
-        let process_id = _res.id;
-        let recipe_id_list: Vec<db_entity::process_regsitrations::ActiveModel> = recipe_id_list
-            .recipe_id_list
-            .iter()
-            .map(|recipe_id| db_entity::process_regsitrations::ActiveModel {
-                id: NotSet,
-                process_id: Set(process_id),
-                recipe_id: Set(recipe_id.clone()),
-            })
-            .collect();
-        let _inserted = db_entity::process_regsitrations::Entity::insert_many(recipe_id_list)
-            .exec(&self.db)
-            .await
-            .unwrap();
+        let repository = ctx
+            .data::<Arc<DbProcessRepository>>()
+            .map_err(|_| "Repository not found".to_string())?;
+        let use_case =
+            CalculateOneProcessUseCase::new(repository.as_ref(), &recipe_id_list.recipe_id_list);
+        let _process_id = use_case.execute().await.unwrap();
 
-        Ok(ProcessId { id: process_id })
+        Ok(ProcessId { id: 123 })
     }
 }

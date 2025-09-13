@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package proto.cooking.v1;
+
+service ProcessService {
+  // Request process data and server calculates step start times
+  rpc CalculateProcess(CalculateProcessRequest) returns (CalculateProcessResponse);
+}
+
+
+// Request: Client provides recipes with steps (no start_time yet)
+message CalculateProcessRequest {
+  repeated Recipe recipes = 1;
+}
+
+message Recipe {
+  string id = 1;
+  repeated Step steps = 2;
+}
+
+message Step {
+  string id = 1;
+  int32 duration_minutes = 2;
+  Resource resource = 3;
+}
+
+// Resources used in steps
+message Resource {
+  string id = 1;
+}
+
+
+// Response: Server attaches start_time to each step
+message CalculateProcessResponse {
+  repeated RecipeWithSchedule recipes = 1;
+}
+
+message RecipeWithSchedule {
+  string id = 1;
+  repeated StepWithSchedule steps = 2;
+}
+
+message StepWithSchedule {
+  string id = 1;
+  int32 duration_minutes = 2;
+  Resource resource = 3;
+  uint64 start_time = 4;
+}

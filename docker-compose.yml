@@ -40,9 +40,9 @@ services:
       - "8000:8000"
 
   main:
-    image: cpp-main
+    image: main:0.1.0
     restart: always
-    build: https://github.com/shota-tsuji/cpp-main.git
+    build: ./backend_python
     ports:
       - "50051:50051"
 

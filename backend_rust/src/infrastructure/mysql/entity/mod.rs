@@ -2,7 +2,8 @@
 
 pub mod prelude;
 
-pub mod process_regsitrations;
+pub mod process_registrations;
+pub mod process_steps;
 pub mod processes;
 pub mod recipes;
 pub mod resources;

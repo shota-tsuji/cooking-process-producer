@@ -1,7 +1,7 @@
 use async_graphql::{EmptySubscription, Schema};
 
 use axum::routing::post;
-use axum::{extract::Extension, Router};
+use axum::{Router, extract::Extension};
 use cpp_backend::infrastructure::db::db_recipe_repository::DbRecipeRepository;
 use cpp_backend::infrastructure::db::db_resource_repository::DbResourceRepository;
 use cpp_backend::presentation::{
@@ -9,8 +9,8 @@ use cpp_backend::presentation::{
     graphql::{mutation::Mutation, query::Query},
 };
 use http::{
-    header::{ACCEPT, CONTENT_TYPE},
     Method,
+    header::{ACCEPT, CONTENT_TYPE},
 };
 use sea_orm::{ConnectOptions, Database};
 use serde::Deserialize;
@@ -23,15 +23,17 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::trace::{DefaultOnRequest, TraceLayer};
 use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt};
 
-pub mod hello_world {
-    tonic::include_proto!("helloworld");
+pub mod proto {
+    tonic::include_proto!("proto.cooking.v1");
 }
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub socket_addr: String,
     pub database_url: String,
     pub origins: Vec<String>,
+    pub process_grpc_server_url: String,
 }
+
 #[tokio::main]
 async fn main() {
     // Setup logging
@@ -59,14 +61,36 @@ async fn main() {
     let db2 = Database::connect(ops.clone()).await.unwrap();
     let db3 = Database::connect(ops.clone()).await.unwrap();
     let db4 = Database::connect(ops.clone()).await.unwrap();
+    let db5 = Database::connect(ops.clone()).await.unwrap();
     let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
     let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db4 });
+    let process_registration_repository = Arc::new(
+        cpp_backend::adapters::db::db_process_registration_repository::DbProcessRepository {
+            db_connection: db5,
+        },
+    );
+    let process_client = proto::process_service_client::ProcessServiceClient::connect(
+        config.process_grpc_server_url,
+    )
+    .await
+    .unwrap();
+    /*
+    let request = tonic::Request::new(CalculateProcessRequest {
+        recipes: vec![Recipe {
+            id: "example".to_string(),
+            steps: vec![],
+        }],
+    });
+    let response = process_client.calculate_process(request).await.unwrap();
+     */
 
     let query = Query {};
     let mutation = Mutation::new(db2);
     let schema = Schema::build(query, mutation, EmptySubscription)
         .data(resource_repository.clone())
         .data(recipe_repository.clone())
+        .data(process_registration_repository.clone())
+        .data(process_client.clone())
         .finish();
 
     let cors = CorsLayer::new()
