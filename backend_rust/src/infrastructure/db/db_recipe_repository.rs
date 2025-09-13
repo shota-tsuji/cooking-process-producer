@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::application::repository::recipe_repository::RecipeRepository;
 use sea_orm::DatabaseConnection;
 
@@ -11,7 +12,7 @@ use async_trait::async_trait;
 use sea_orm::*;
 
 pub struct DbRecipeRepository {
-    pub db_connection: DatabaseConnection,
+    pub db_connection: Arc<DatabaseConnection>,
 }
 
 #[async_trait]
@@ -22,7 +23,7 @@ impl RecipeRepository for DbRecipeRepository {
     ) -> Result<Recipe, Box<dyn std::error::Error>> {
         let mut recipe_with_steps = db_entity::recipes::Entity::find_by_id(recipe_id.clone())
             .find_with_related(db_entity::steps::Entity)
-            .all(&self.db_connection)
+            .all(&*self.db_connection)
             .await
             .unwrap();
         let (recipe_model, step_models) = recipe_with_steps.pop().unwrap();
@@ -38,7 +39,7 @@ impl RecipeRepository for DbRecipeRepository {
 
     async fn get_all_recipes(&self) -> Result<Vec<Recipe>, Box<dyn std::error::Error>> {
         let recipe_models: Vec<db_entity::recipes::Model> = db_entity::recipes::Entity::find()
-            .all(&self.db_connection)
+            .all(&*self.db_connection)
             .await?;
         let recipes = recipe_models
             .into_iter()

@@ -58,15 +58,13 @@ async fn main() {
     let config: Config = serde_yaml::from_reader(config_file).unwrap();
 
     let ops = ConnectOptions::new(config.database_url);
+    let db = Arc::new(Database::connect(ops.clone()).await.unwrap());
     let db2 = Database::connect(ops.clone()).await.unwrap();
-    let db3 = Database::connect(ops.clone()).await.unwrap();
-    let db4 = Database::connect(ops.clone()).await.unwrap();
-    let db5 = Database::connect(ops.clone()).await.unwrap();
-    let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
-    let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db4 });
+    let resource_repository = Arc::new(DbResourceRepository { db_connection: db.clone() });
+    let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db.clone() });
     let process_registration_repository = Arc::new(
         cpp_backend::adapters::db::db_process_registration_repository::DbProcessRepository {
-            db_connection: db5,
+            db_connection: db.clone(),
         },
     );
     let process_client = proto::process_service_client::ProcessServiceClient::connect(
