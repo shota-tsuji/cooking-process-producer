@@ -1,13 +1,17 @@
-use async_graphql::{Context, Object};
-use sea_orm::QueryFilter;
-use sea_orm::*;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
-use ulid::Ulid;
-
+use crate::adapters::db::db_process_registration_repository::DbProcessRegistrationRepository;
+use crate::application::usecase::calculate_one_process_use_case::CalculateOneProcessUseCase;
 use crate::presentation::graphql::object::{
     CreateProcessInput, CreateResourceInput, CreateStepInput, ProcessId, Resource,
     UpdateResourceInput,
 };
+use async_graphql::{Context, Object};
+use sea_orm::QueryFilter;
+use sea_orm::*;
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
+use std::sync::Arc;
+use ulid::Ulid;
+
+use crate::application::usecase::interface::AbstractUseCase;
 
 use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 
@@ -165,7 +169,7 @@ impl Mutation {
 
     async fn create_process(
         &self,
-        _ctx: &Context<'_>,
+        ctx: &Context<'_>,
         recipe_id_list: CreateProcessInput,
     ) -> Result<ProcessId, String> {
         let process = db_entity::processes::ActiveModel {
@@ -174,6 +178,13 @@ impl Mutation {
         };
         let _res = process.insert(&self.db).await.unwrap();
         let process_id = _res.id;
+
+        let repository = ctx
+            .data::<Arc<DbProcessRegistrationRepository>>()
+            .map_err(|_| "Repository not found".to_string())?;
+        let usecase =
+            CalculateOneProcessUseCase::new(repository.as_ref(), &recipe_id_list.recipe_id_list);
+        let _result = usecase.execute().await.unwrap();
         let recipe_id_list: Vec<db_entity::process_regsitrations::ActiveModel> = recipe_id_list
             .recipe_id_list
             .iter()

@@ -1,0 +1,1 @@
+pub mod db_process_registration_repository;

@@ -61,8 +61,14 @@ async fn main() {
     let db2 = Database::connect(ops.clone()).await.unwrap();
     let db3 = Database::connect(ops.clone()).await.unwrap();
     let db4 = Database::connect(ops.clone()).await.unwrap();
+    let db5 = Database::connect(ops.clone()).await.unwrap();
     let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
     let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db4 });
+    let process_registration_repository = Arc::new(
+        cpp_backend::adapters::db::db_process_registration_repository::DbProcessRegistrationRepository {
+            db_connection: db5,
+        },
+    );
     let process_client = proto::process_service_client::ProcessServiceClient::connect(
         config.process_grpc_server_url,
     )
@@ -83,6 +89,7 @@ async fn main() {
     let schema = Schema::build(query, mutation, EmptySubscription)
         .data(resource_repository.clone())
         .data(recipe_repository.clone())
+        .data(process_registration_repository.clone())
         .data(process_client.clone())
         .finish();
 
