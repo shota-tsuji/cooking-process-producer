@@ -10,7 +10,7 @@ pub trait ProcessRepository: Send + Sync {
     //async fn get_recipe_by_id(&self, resource_id: String) -> Result<Recipe, Box<dyn Error>>;
     async fn register_process(
         &self,
-        process_id: u64,
+        process_id: String,
         recipe_id_list: Vec<String>,
     ) -> Result<(), Box<dyn Error>>;
 }

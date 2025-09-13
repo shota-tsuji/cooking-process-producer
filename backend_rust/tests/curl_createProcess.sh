@@ -18,5 +18,5 @@ curl -X POST "$GRAPHQL_ENDPOINT" \
   -H "Content-Type: application/json" \
   -d '{
     "query": "mutation createProcess($recipeIdList: CreateProcessInput!) { createProcess(recipeIdList: $recipeIdList) { id } }",
-    "variables": { "recipeIdList": { "recipeIdList": ["01K5115CRCFR5YRNZ0HX9Y6J7J", "01K5119WR05236RWT52HTD22ZQ"] } }
+    "variables": { "recipeIdList": { "recipeIdList": ["01K519ZVXF93RGWFW32W45FHCN", "01K519ZYACKD0D2DZSZC6D5GG1"] } }
   }'
