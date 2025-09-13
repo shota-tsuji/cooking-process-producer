@@ -3,9 +3,10 @@ use crate::infrastructure::mysql::entity as db_entity;
 use async_trait::async_trait;
 use sea_orm::DatabaseConnection;
 use sea_orm::*;
+use std::sync::Arc;
 
 pub struct DbResourceRepository {
-    pub db_connection: DatabaseConnection,
+    pub db_connection: Arc<DatabaseConnection>,
 }
 
 #[async_trait]
@@ -15,7 +16,7 @@ impl ResourceRepository for DbResourceRepository {
         id: i32,
     ) -> Result<crate::domain::resource::Resource, Box<dyn std::error::Error>> {
         let model = db_entity::resources::Entity::find_by_id(id as u64)
-            .one(&self.db_connection)
+            .one(&*self.db_connection)
             .await;
 
         match model {
@@ -42,7 +43,7 @@ impl ResourceRepository for DbResourceRepository {
         &self,
     ) -> Result<Vec<crate::domain::resource::Resource>, Box<dyn std::error::Error>> {
         let models = db_entity::resources::Entity::find()
-            .all(&self.db_connection)
+            .all(&*self.db_connection)
             .await;
 
         match models {
