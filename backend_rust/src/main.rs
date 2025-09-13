@@ -1,6 +1,5 @@
 use async_graphql::{EmptySubscription, Schema};
 
-use crate::proto::{CalculateProcessRequest, Recipe};
 use axum::routing::post;
 use axum::{Router, extract::Extension};
 use cpp_backend::infrastructure::db::db_recipe_repository::DbRecipeRepository;
@@ -64,11 +63,12 @@ async fn main() {
     let db4 = Database::connect(ops.clone()).await.unwrap();
     let resource_repository = Arc::new(DbResourceRepository { db_connection: db3 });
     let recipe_repository = Arc::new(DbRecipeRepository { db_connection: db4 });
-    let mut process_client = proto::process_service_client::ProcessServiceClient::connect(
+    let process_client = proto::process_service_client::ProcessServiceClient::connect(
         config.process_grpc_server_url,
     )
     .await
     .unwrap();
+    /*
     let request = tonic::Request::new(CalculateProcessRequest {
         recipes: vec![Recipe {
             id: "example".to_string(),
@@ -76,13 +76,14 @@ async fn main() {
         }],
     });
     let response = process_client.calculate_process(request).await.unwrap();
-    println!("RESPONSE={response:?}");
+     */
 
     let query = Query {};
     let mutation = Mutation::new(db2);
     let schema = Schema::build(query, mutation, EmptySubscription)
         .data(resource_repository.clone())
         .data(recipe_repository.clone())
+        .data(process_client.clone())
         .finish();
 
     let cors = CorsLayer::new()
