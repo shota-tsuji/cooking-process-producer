@@ -1,14 +1,14 @@
 use async_graphql::{Context, EmptySubscription, ID, Object, Schema};
 use std::sync::Arc;
 
+use crate::adapters::db::db_recipe_repository::DbRecipeRepository;
+use crate::adapters::db::db_resource_repository::DbResourceRepository;
 use crate::adapters::recipe_mapper::{RecipeDetailMapper, RecipeMapper};
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
 use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
 use crate::application::usecase::get_one_resource_by_id_usecase::GetOneResourceByIdUseCase;
 use crate::application::usecase::interface::AbstractUseCase;
-use crate::infrastructure::db::db_recipe_repository::DbRecipeRepository;
-use crate::infrastructure::db::db_resource_repository::DbResourceRepository;
 use crate::presentation::graphql::mutation::Mutation;
 use crate::presentation::graphql::object::{Process, Resource, ResourceInfo, StepResult};
 
