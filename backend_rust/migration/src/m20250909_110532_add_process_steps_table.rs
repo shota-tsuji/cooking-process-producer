@@ -19,7 +19,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(ProcessSteps::ProcessId)
-                            .big_unsigned()
+                            .string_len(36)
                             .not_null(),
                     )
                     .col(

@@ -38,7 +38,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Processes::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Processes::Id).big_unsigned().not_null().auto_increment().primary_key())
+                    .col(ColumnDef::new(Processes::Id).string_len(36).not_null().primary_key())
                     .col(ColumnDef::new(Processes::Name).string_len(140).not_null())
                     .to_owned(),
             )
@@ -70,23 +70,23 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // process_regsitrations
+        // process_registrations
         manager
             .create_table(
                 Table::create()
-                    .table(ProcessRegsitrations::Table)
+                    .table(ProcessRegistrations::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(ProcessRegsitrations::Id).big_unsigned().not_null().auto_increment().primary_key())
-                    .col(ColumnDef::new(ProcessRegsitrations::ProcessId).big_unsigned().not_null())
-                    .col(ColumnDef::new(ProcessRegsitrations::RecipeId).string_len(36).not_null())
+                    .col(ColumnDef::new(ProcessRegistrations::Id).big_unsigned().not_null().auto_increment().primary_key())
+                    .col(ColumnDef::new(ProcessRegistrations::ProcessId).string_len(36).not_null())
+                    .col(ColumnDef::new(ProcessRegistrations::RecipeId).string_len(36).not_null())
                     .foreign_key(
                         ForeignKey::create()
-                            .from(ProcessRegsitrations::Table, ProcessRegsitrations::ProcessId)
+                            .from(ProcessRegistrations::Table, ProcessRegistrations::ProcessId)
                             .to(Processes::Table, Processes::Id),
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .from(ProcessRegsitrations::Table, ProcessRegsitrations::RecipeId)
+                            .from(ProcessRegistrations::Table, ProcessRegistrations::RecipeId)
                             .to(Recipes::Table, Recipes::Id),
                     )
                     .to_owned(),
@@ -99,7 +99,7 @@ impl MigrationTrait for Migration {
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // Drop in reverse order due to foreign key constraints
         manager
-            .drop_table(Table::drop().table(ProcessRegsitrations::Table).to_owned())
+            .drop_table(Table::drop().table(ProcessRegistrations::Table).to_owned())
             .await?;
         manager
             .drop_table(Table::drop().table(Steps::Table).to_owned())
@@ -153,7 +153,7 @@ enum Processes {
 }
 
 #[derive(DeriveIden)]
-enum ProcessRegsitrations {
+enum ProcessRegistrations {
     Table,
     Id,
     ProcessId,
