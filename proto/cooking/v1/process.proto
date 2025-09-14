@@ -11,6 +11,7 @@ service ProcessService {
 // Request: Client provides recipes with steps (no start_time yet)
 message CalculateProcessRequest {
   repeated Recipe recipes = 1;
+  repeated Resource resources = 2; // Available resources
 }
 
 message Recipe {
@@ -21,7 +22,7 @@ message Recipe {
 message Step {
   string id = 1;
   int32 duration_minutes = 2;
-  Resource resource = 3;
+  string resource_id = 3; // Link to Resource by id
 }
 
 // Resources used in steps
@@ -44,6 +45,6 @@ message RecipeWithSchedule {
 message StepWithSchedule {
   string id = 1;
   int32 duration_minutes = 2;
-  Resource resource = 3;
+  string resource_id = 3; // Link to Resource by id
   uint64 start_time = 4;
 }

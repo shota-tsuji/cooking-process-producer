@@ -26,6 +26,7 @@ impl ProcessServicePort for GrpcProcessServiceClient {
             .collect();
         let request = tonic::Request::new(CalculateProcessRequest {
             recipes: recipe_messages,
+            resources: vec![],
         });
 
         let mut client = self.client.lock().await;
