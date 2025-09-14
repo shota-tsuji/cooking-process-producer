@@ -1,7 +1,7 @@
 use crate::application::repository::resource_repository::ResourceRepository;
 use crate::application::usecase::interface::AbstractUseCase;
+use crate::domain::Resource;
 use crate::domain::error::ApiError;
-use crate::domain::resource::Resource;
 use async_trait::async_trait;
 
 pub struct GetOneResourceByIdUseCase<'a> {
@@ -43,10 +43,8 @@ mod tests {
     use super::*;
     use mockall::predicate::eq;
 
-    use crate::{
-        application::repository::resource_repository::MockResourceRepository,
-        domain::resource::Resource,
-    };
+    use crate::application::repository::resource_repository::MockResourceRepository;
+    use crate::domain::Resource;
 
     #[tokio::test]
     async fn test_should_return_one_result() {

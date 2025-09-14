@@ -2,7 +2,7 @@ use crate::adapters::db::mysql::entity::recipes::Model as RecipeModel;
 use crate::adapters::step_mapper::StepMapper;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::mapper::db_mapper::DbMapper;
-use crate::domain::recipe::Recipe;
+use crate::domain::Recipe;
 use crate::presentation::graphql::object::Recipe as RecipeObject;
 use crate::presentation::graphql::object::RecipeDetail as RecipeDetailObject;
 

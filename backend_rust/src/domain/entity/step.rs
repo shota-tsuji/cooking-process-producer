@@ -1,4 +1,4 @@
-use crate::domain::resource::Resource;
+use crate::domain::Resource;
 
 pub struct Step {
     pub id: String,

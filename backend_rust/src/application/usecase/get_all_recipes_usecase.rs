@@ -1,7 +1,7 @@
 use crate::application::repository::recipe_repository::RecipeRepository;
 use crate::application::usecase::interface::AbstractUseCase;
+use crate::domain::Recipe;
 use crate::domain::error::ApiError;
-use crate::domain::recipe::Recipe;
 use async_trait::async_trait;
 
 pub struct GetAllRecipesUseCase<'a> {

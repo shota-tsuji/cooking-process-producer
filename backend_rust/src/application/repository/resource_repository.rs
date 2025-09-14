@@ -1,4 +1,4 @@
-use crate::domain::resource::Resource;
+use crate::domain::Resource;
 use async_trait::async_trait;
 use std::error::Error;
 

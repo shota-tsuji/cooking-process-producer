@@ -1,7 +1,7 @@
 use crate::application::repository::recipe_repository::RecipeRepository;
 use crate::application::usecase::interface::AbstractUseCase;
+use crate::domain::Recipe;
 use crate::domain::error::ApiError;
-use crate::domain::recipe::Recipe;
 use async_trait::async_trait;
 
 pub struct GetOneRecipeByIdUseCase<'a> {
@@ -42,9 +42,8 @@ impl<'a> AbstractUseCase<Recipe> for GetOneRecipeByIdUseCase<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        application::repository::recipe_repository::MockRecipeRepository, domain::recipe::Recipe,
-    };
+    use crate::application::repository::recipe_repository::MockRecipeRepository;
+    use crate::domain::entity::recipe::Recipe;
     use mockall::predicate::eq;
 
     #[tokio::test]

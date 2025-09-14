@@ -1,5 +1,4 @@
+pub mod entity;
 pub mod error;
-mod process;
-pub mod recipe;
-pub mod resource;
-pub mod step;
+
+pub use self::entity::{recipe::Recipe, resource::Resource, step::Step};

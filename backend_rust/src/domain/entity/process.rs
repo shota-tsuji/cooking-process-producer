@@ -1,4 +1,4 @@
-use crate::domain::recipe::Recipe;
+use crate::domain::Recipe;
 #[allow(dead_code)]
 pub struct Process {
     pub id: String,

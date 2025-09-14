@@ -1,6 +1,6 @@
 use crate::application::repository::resource_repository::ResourceRepository;
 use crate::application::usecase::interface::AbstractUseCase;
-use crate::domain::resource::Resource;
+use crate::domain::Resource;
 use async_trait::async_trait;
 
 pub struct GetAllResourcesUsecase<'a> {
@@ -35,10 +35,8 @@ impl<'a> AbstractUseCase<Vec<Resource>> for GetAllResourcesUsecase<'a> {
 mod tests {
     use super::*;
 
-    use crate::{
-        application::repository::resource_repository::MockResourceRepository,
-        domain::resource::Resource,
-    };
+    use crate::application::repository::resource_repository::MockResourceRepository;
+    use crate::domain::Resource;
 
     #[tokio::test]
     async fn test_should_return_all_results() {
