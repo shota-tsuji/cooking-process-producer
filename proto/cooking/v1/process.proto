@@ -27,6 +27,7 @@ message Step {
 // Resources used in steps
 message Resource {
   string id = 1;
+  int32 quantity = 2; // e.g., number of ovens, stoves
 }
 
 

@@ -9,6 +9,7 @@ impl EntityToGrpcRequestMapper<Resource, ResourceMessage> for ResourceMapper {
     fn map_to_request(entity: Resource) -> ResourceMessage {
         ResourceMessage {
             id: entity.id.to_string(),
+            quantity: entity.amount,
         }
     }
 }
