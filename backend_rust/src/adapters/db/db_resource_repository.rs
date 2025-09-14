@@ -1,6 +1,7 @@
 use crate::adapters::db::mysql::entity as db_entity;
 use crate::application::repository::resource_repository::ResourceRepository;
 use crate::domain::Resource;
+use crate::domain::entity::resource::ResourceId;
 use crate::domain::error::AsyncDynError;
 use async_trait::async_trait;
 use sea_orm::DatabaseConnection;
@@ -21,7 +22,7 @@ impl ResourceRepository for DbResourceRepository {
         match model {
             Ok(Some(model)) => {
                 let resource = Resource {
-                    id: model.id as i32,
+                    id: ResourceId(model.id as i32),
                     name: model.name,
                     amount: model.amount,
                 };
@@ -48,7 +49,7 @@ impl ResourceRepository for DbResourceRepository {
                 let models = models
                     .into_iter()
                     .map(|model| Resource {
-                        id: model.id as i32,
+                        id: ResourceId(model.id as i32),
                         name: model.name,
                         amount: model.amount,
                     })

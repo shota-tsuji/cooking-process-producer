@@ -3,6 +3,7 @@ use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::mapper::db_mapper::DbMapper;
 use crate::domain::Resource;
 use crate::domain::Step;
+use crate::domain::entity::resource::ResourceId;
 use crate::presentation::graphql::object::Step as StepObject;
 pub struct StepMapper {}
 
@@ -11,7 +12,7 @@ impl ApiMapper<Step, StepObject> for StepMapper {
         StepObject {
             id: entity.id,
             description: entity.description,
-            resource_id: entity.resource.id as u64,
+            resource_id: entity.resource.id.0 as u64,
             order_number: entity.order,
             duration: entity.duration,
         }
@@ -30,7 +31,7 @@ impl DbMapper<Step, StepModel> for StepMapper {
             order: model.order_number,
             duration: model.duration,
             resource: Resource {
-                id: 1,
+                id: ResourceId(1),
                 name: String::new(),
                 amount: 0,
             },

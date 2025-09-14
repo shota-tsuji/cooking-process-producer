@@ -8,7 +8,7 @@ pub struct ResourceMapper {}
 impl EntityToGrpcRequestMapper<Resource, ResourceMessage> for ResourceMapper {
     fn map_to_request(entity: Resource) -> ResourceMessage {
         ResourceMessage {
-            id: entity.id.to_string(),
+            id: entity.id.0.to_string(),
             quantity: entity.amount,
         }
     }

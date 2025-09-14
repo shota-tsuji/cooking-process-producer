@@ -45,6 +45,7 @@ mod tests {
 
     use crate::application::repository::resource_repository::MockResourceRepository;
     use crate::domain::Resource;
+    use crate::domain::entity::resource::ResourceId;
 
     #[tokio::test]
     async fn test_should_return_one_result() {
@@ -56,7 +57,7 @@ mod tests {
             .times(1)
             .returning(|_| {
                 Ok(Resource {
-                    id: 1,
+                    id: ResourceId(1),
                     name: String::from("Resource1"),
                     amount: 10,
                 })
@@ -68,7 +69,7 @@ mod tests {
         let data = get_one_resource_by_id_usecase.execute().await.unwrap();
 
         // then one result
-        assert_eq!(1, data.id);
+        assert_eq!(ResourceId(1), data.id);
         assert_eq!("Resource1", data.name);
         assert_eq!(10, data.amount);
     }

@@ -37,6 +37,7 @@ mod tests {
 
     use crate::application::repository::resource_repository::MockResourceRepository;
     use crate::domain::Resource;
+    use crate::domain::entity::resource::ResourceId;
 
     #[tokio::test]
     async fn test_should_return_all_results() {
@@ -47,12 +48,12 @@ mod tests {
             .returning(|| {
                 Ok(vec![
                     Resource {
-                        id: 1,
+                        id: ResourceId(1),
                         name: String::from("Resource 1"),
                         amount: 10,
                     },
                     Resource {
-                        id: 2,
+                        id: ResourceId(2),
                         name: String::from("Resource 2"),
                         amount: 20,
                     },
@@ -63,12 +64,12 @@ mod tests {
         let result = get_all_resources_usecase.execute().await.unwrap();
 
         let resource1 = Resource {
-            id: 1,
+            id: ResourceId(1),
             name: String::from("Resource 1"),
             amount: 10,
         };
         let resource2 = Resource {
-            id: 2,
+            id: ResourceId(2),
             name: String::from("Resource 2"),
             amount: 20,
         };
