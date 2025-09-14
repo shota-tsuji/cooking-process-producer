@@ -35,7 +35,7 @@ impl RecipeRepository for DbRecipeRepository {
         })
     }
 
-    async fn get_recipe_by_ids(
+    async fn get_recipes_by_ids(
         &self,
         recipe_ids: Vec<String>,
     ) -> Result<Vec<Recipe>, Box<AsyncDynError>> {
