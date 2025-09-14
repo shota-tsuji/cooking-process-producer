@@ -35,6 +35,28 @@ impl RecipeRepository for DbRecipeRepository {
         })
     }
 
+    async fn get_recipe_by_ids(
+        &self,
+        recipe_ids: Vec<String>,
+    ) -> Result<Vec<Recipe>, Box<AsyncDynError>> {
+        use db_entity::recipes;
+        use db_entity::steps;
+        let recipe_models: Vec<(recipes::Model, Vec<steps::Model>)> = recipes::Entity::find()
+            .filter(recipes::Column::Id.is_in(recipe_ids.clone()))
+            .find_with_related(steps::Entity)
+            .all(&*self.db_connection)
+            .await?;
+
+        let mut recipes: Vec<Recipe> = Vec::new();
+        for (recipe, steps) in recipe_models {
+            let steps: Vec<Step> = steps.into_iter().map(StepMapper::to_entity).collect();
+            let mut recipe = RecipeMapper::to_entity(recipe);
+            recipe.steps = steps;
+            recipes.push(recipe);
+        }
+        Ok(recipes)
+    }
+
     async fn get_all_recipes(&self) -> Result<Vec<Recipe>, Box<AsyncDynError>> {
         let recipe_models: Vec<db_entity::recipes::Model> = db_entity::recipes::Entity::find()
             .all(&*self.db_connection)

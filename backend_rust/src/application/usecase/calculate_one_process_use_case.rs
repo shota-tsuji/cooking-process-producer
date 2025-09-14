@@ -1,5 +1,6 @@
 use crate::application::port::ProcessServicePort;
 use crate::application::repository::process_repository::ProcessRepository;
+use crate::application::repository::recipe_repository::RecipeRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::error::ApiError;
 use async_trait::async_trait;
@@ -9,6 +10,7 @@ pub struct CalculateOneProcessUseCase<'a> {
     pub recipe_id_list: &'a Vec<String>,
     pub repository: &'a dyn ProcessRepository,
     pub process_service: &'a dyn ProcessServicePort,
+    pub recipe_repository: &'a dyn RecipeRepository,
 }
 
 impl<'a> CalculateOneProcessUseCase<'a> {
@@ -16,11 +18,13 @@ impl<'a> CalculateOneProcessUseCase<'a> {
         repository: &'a dyn ProcessRepository,
         recipe_id_list: &'a Vec<String>,
         process_service: &'a dyn ProcessServicePort,
+        recipe_repository: &'a dyn RecipeRepository,
     ) -> Self {
         CalculateOneProcessUseCase {
             repository,
             recipe_id_list,
             process_service,
+            recipe_repository,
         }
     }
 }
