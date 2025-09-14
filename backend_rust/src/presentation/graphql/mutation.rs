@@ -16,6 +16,8 @@ use crate::application::usecase::interface::AbstractUseCase;
 use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 
 use crate::adapters::db::mysql::entity as db_entity;
+use crate::adapters::grpc::process_service_client::GrpcProcessServiceClient;
+
 pub struct Mutation {
     db: DatabaseConnection,
 }
@@ -170,12 +172,19 @@ impl Mutation {
     async fn create_process(
         &self,
         ctx: &Context<'_>,
-        input: CreateProcessInput,
+        recipe_id_list: CreateProcessInput,
     ) -> Result<ProcessId, String> {
         let repository = ctx
             .data::<Arc<DbProcessRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
-        let use_case = CalculateOneProcessUseCase::new(repository.as_ref(), &input.recipe_id_list);
+        let service = ctx
+            .data::<Arc<GrpcProcessServiceClient>>()
+            .map_err(|_| "Service not found".to_string())?;
+        let use_case = CalculateOneProcessUseCase::new(
+            repository.as_ref(),
+            &recipe_id_list.recipe_id_list,
+            service.as_ref(),
+        );
         let _process_id = use_case.execute().await.unwrap();
 
         Ok(ProcessId { id: 123 })

@@ -1,6 +1,7 @@
 use crate::adapters::db::mysql::entity as db_entity;
 use crate::application::repository::resource_repository::ResourceRepository;
 use crate::domain::Resource;
+use crate::domain::error::AsyncDynError;
 use async_trait::async_trait;
 use sea_orm::DatabaseConnection;
 use sea_orm::*;
@@ -12,7 +13,7 @@ pub struct DbResourceRepository {
 
 #[async_trait]
 impl ResourceRepository for DbResourceRepository {
-    async fn get_resource_by_id(&self, id: i32) -> Result<Resource, Box<dyn std::error::Error>> {
+    async fn get_resource_by_id(&self, id: i32) -> Result<Resource, Box<AsyncDynError>> {
         let model = db_entity::resources::Entity::find_by_id(id as u64)
             .one(&*self.db_connection)
             .await;
@@ -37,7 +38,7 @@ impl ResourceRepository for DbResourceRepository {
         }
     }
 
-    async fn get_all_resources(&self) -> Result<Vec<Resource>, Box<dyn std::error::Error>> {
+    async fn get_all_resources(&self) -> Result<Vec<Resource>, Box<AsyncDynError>> {
         let models = db_entity::resources::Entity::find()
             .all(&*self.db_connection)
             .await;
