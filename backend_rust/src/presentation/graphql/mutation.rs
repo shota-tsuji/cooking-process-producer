@@ -1,7 +1,7 @@
 use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
-use crate::adapters::db::db_process_registration_repository::DbProcessRepository;
-use crate::adapters::db::db_recipe_repository::DbRecipeRepository;
-use crate::adapters::db::db_resource_repository::DbResourceRepository;
+use crate::adapters::repository::db_process_registration_repository::DbProcessRepository;
+use crate::adapters::repository::db_recipe_repository::DbRecipeRepository;
+use crate::adapters::repository::db_resource_repository::DbResourceRepository;
 use crate::application::usecase::calculate_one_process_use_case::CalculateOneProcessUseCase;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::presentation::graphql::object::{
@@ -15,8 +15,8 @@ use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use std::sync::Arc;
 use ulid::Ulid;
 
-use crate::adapters::db::mysql::entity as db_entity;
 use crate::adapters::grpc::process_service_client::GrpcProcessServiceClient;
+use crate::adapters::repository::mysql::entity as db_entity;
 
 pub struct Mutation {
     db: DatabaseConnection,

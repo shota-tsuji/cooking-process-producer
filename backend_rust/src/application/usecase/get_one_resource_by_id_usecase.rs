@@ -1,4 +1,4 @@
-use crate::application::repository::resource_repository::ResourceRepository;
+use crate::application::port::repository::resource_repository::ResourceRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::Resource;
 use crate::domain::error::ApiError;
@@ -43,7 +43,7 @@ mod tests {
     use super::*;
     use mockall::predicate::eq;
 
-    use crate::application::repository::resource_repository::MockResourceRepository;
+    use crate::application::port::repository::resource_repository::MockResourceRepository;
     use crate::domain::Resource;
     use crate::domain::entity::resource::ResourceId;
 

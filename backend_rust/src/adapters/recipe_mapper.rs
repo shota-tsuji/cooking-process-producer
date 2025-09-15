@@ -1,4 +1,4 @@
-use crate::adapters::db::mysql::entity::recipes::Model as RecipeModel;
+use crate::adapters::repository::mysql::entity::recipes::Model as RecipeModel;
 use crate::adapters::step_mapper::StepMapper;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::mapper::db_mapper::DbMapper;

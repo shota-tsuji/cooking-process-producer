@@ -1,4 +1,4 @@
-use crate::application::repository::recipe_repository::RecipeRepository;
+use crate::application::port::repository::recipe_repository::RecipeRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::Recipe;
 use crate::domain::error::ApiError;
@@ -42,7 +42,7 @@ impl<'a> AbstractUseCase<Recipe> for GetOneRecipeByIdUseCase<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::application::repository::recipe_repository::MockRecipeRepository;
+    use crate::application::port::repository::recipe_repository::MockRecipeRepository;
     use crate::domain::entity::recipe::Recipe;
     use mockall::predicate::eq;
 

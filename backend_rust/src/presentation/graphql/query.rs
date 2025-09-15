@@ -1,9 +1,9 @@
 use async_graphql::{Context, EmptySubscription, ID, Object, Schema};
 use std::sync::Arc;
 
-use crate::adapters::db::db_recipe_repository::DbRecipeRepository;
-use crate::adapters::db::db_resource_repository::DbResourceRepository;
 use crate::adapters::recipe_mapper::{RecipeDetailMapper, RecipeMapper};
+use crate::adapters::repository::db_recipe_repository::DbRecipeRepository;
+use crate::adapters::repository::db_resource_repository::DbResourceRepository;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
 use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
@@ -277,7 +277,7 @@ impl Query {
 #[cfg(test)]
 mod tests {
 
-    use crate::adapters::db::mysql::entity as db_entity;
+    use crate::adapters::repository::mysql::entity as db_entity;
     use sea_orm::*;
     use sea_orm::{DatabaseBackend, MockDatabase};
 

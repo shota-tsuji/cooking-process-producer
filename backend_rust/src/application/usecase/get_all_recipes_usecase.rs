@@ -1,4 +1,4 @@
-use crate::application::repository::recipe_repository::RecipeRepository;
+use crate::application::port::repository::recipe_repository::RecipeRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::Recipe;
 use crate::domain::error::ApiError;

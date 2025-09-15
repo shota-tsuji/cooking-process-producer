@@ -1,7 +1,7 @@
-use crate::adapters::db::mysql::entity as db_entity;
-use crate::adapters::db::mysql::resource_mapper::ResourceMapper;
+use crate::adapters::repository::mysql::entity as db_entity;
+use crate::adapters::repository::mysql::resource_mapper::ResourceMapper;
 use crate::application::mapper::db_mapper::DbMapper;
-use crate::application::repository::ResourceRepository;
+use crate::application::port::repository::ResourceRepository;
 use crate::domain::Resource;
 use crate::domain::entity::resource::ResourceId;
 use crate::domain::error::AsyncDynError;

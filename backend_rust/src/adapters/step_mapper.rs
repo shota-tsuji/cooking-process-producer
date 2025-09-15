@@ -1,4 +1,4 @@
-use crate::adapters::db::mysql::entity::steps::Model as StepModel;
+use crate::adapters::repository::mysql::entity::steps::Model as StepModel;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::mapper::db_mapper::DbMapper;
 use crate::domain::Step;

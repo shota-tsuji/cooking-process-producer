@@ -1,9 +1,9 @@
-use crate::application::repository::RecipeRepository;
+use crate::application::port::repository::RecipeRepository;
 use sea_orm::DatabaseConnection;
 use std::sync::Arc;
 
-use crate::adapters::db::mysql::entity as db_entity;
 use crate::adapters::recipe_mapper::RecipeMapper;
+use crate::adapters::repository::mysql::entity as db_entity;
 use crate::adapters::step_mapper::StepMapper;
 use crate::application::mapper::db_mapper::DbMapper;
 use crate::domain::Recipe;

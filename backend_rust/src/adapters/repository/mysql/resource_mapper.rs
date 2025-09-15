@@ -1,4 +1,4 @@
-use crate::adapters::db::mysql::entity::resources::Model as ResourceModel;
+use crate::adapters::repository::mysql::entity::resources::Model as ResourceModel;
 use crate::application::mapper::db_mapper::DbMapper;
 use crate::domain::Resource;
 use crate::domain::entity::resource::ResourceId;
