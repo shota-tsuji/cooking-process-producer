@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use crate::adapters::controller::graphql::mutation::Mutation;
 use crate::adapters::controller::graphql::object::{Process, Resource, ResourceInfo, StepResult};
-use crate::adapters::recipe_mapper::{RecipeDetailMapper, RecipeMapper};
+use crate::adapters::controller::graphql::recipe_mapper::{RecipeDetailMapper, RecipeMapper};
 use crate::adapters::repository::MysqlRecipeRepository;
 use crate::adapters::repository::MysqlResourceRepository;
 use crate::application::mapper::api_mapper::ApiMapper;
