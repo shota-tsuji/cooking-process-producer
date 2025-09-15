@@ -1,5 +1,7 @@
+use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 use crate::adapters::db::db_process_registration_repository::DbProcessRepository;
 use crate::adapters::db::db_recipe_repository::DbRecipeRepository;
+use crate::adapters::db::db_resource_repository::DbResourceRepository;
 use crate::application::usecase::calculate_one_process_use_case::CalculateOneProcessUseCase;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::presentation::graphql::object::{
@@ -12,8 +14,6 @@ use sea_orm::*;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use std::sync::Arc;
 use ulid::Ulid;
-
-use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 
 use crate::adapters::db::mysql::entity as db_entity;
 use crate::adapters::grpc::process_service_client::GrpcProcessServiceClient;
@@ -180,6 +180,9 @@ impl Mutation {
         let recipe_repository = ctx
             .data::<Arc<DbRecipeRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
+        let resource_repository = ctx
+            .data::<Arc<DbResourceRepository>>()
+            .map_err(|_| "Repository not found".to_string())?;
         let service = ctx
             .data::<Arc<GrpcProcessServiceClient>>()
             .map_err(|_| "Service not found".to_string())?;
@@ -189,6 +192,7 @@ impl Mutation {
             &recipe_id_list.recipe_id_list,
             service.as_ref(),
             recipe_repository.as_ref(),
+            resource_repository.as_ref(),
         );
         let _process_id = use_case.execute().await.unwrap();
 
