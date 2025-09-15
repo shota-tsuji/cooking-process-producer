@@ -5,10 +5,10 @@ use cpp_backend::adapters::controller::graphql::graphql_controller::graphql_hand
 use cpp_backend::adapters::controller::graphql::mutation::Mutation;
 use cpp_backend::adapters::controller::graphql::query::Query;
 use cpp_backend::adapters::external::grpc::cooking::process_service_client;
+use cpp_backend::adapters::external::grpc::process_service_client::GrpcProcessServiceClient;
 use cpp_backend::adapters::repository::MysqlProcessRepository;
 use cpp_backend::adapters::repository::MysqlRecipeRepository;
 use cpp_backend::adapters::repository::MysqlResourceRepository;
-use cpp_backend::adapters::external::grpc::process_service_client::GrpcProcessServiceClient;
 use http::{
     Method,
     header::{ACCEPT, CONTENT_TYPE},
@@ -76,11 +76,9 @@ async fn main() {
             .await
             .unwrap(),
     ));
-    let process_service = Arc::new(
-        GrpcProcessServiceClient {
-            client: process_client.clone(),
-        },
-    );
+    let process_service = Arc::new(GrpcProcessServiceClient {
+        client: process_client.clone(),
+    });
 
     let query = Query {};
     let mutation = Mutation::new(db2);
