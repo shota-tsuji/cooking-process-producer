@@ -2,14 +2,13 @@ use async_graphql::{EmptySubscription, Schema};
 
 use axum::routing::post;
 use axum::{Router, extract::Extension};
+use cpp_backend::adapters::controller::graphql::graphql_controller::graphql_handler;
+use cpp_backend::adapters::controller::graphql::mutation::Mutation;
+use cpp_backend::adapters::controller::graphql::query::Query;
 use cpp_backend::adapters::grpc::cooking::process_service_client;
 use cpp_backend::adapters::repository::MysqlProcessRepository;
 use cpp_backend::adapters::repository::MysqlRecipeRepository;
 use cpp_backend::adapters::repository::MysqlResourceRepository;
-use cpp_backend::presentation::{
-    controller::graphql_controller::graphql_handler,
-    graphql::{mutation::Mutation, query::Query},
-};
 use http::{
     Method,
     header::{ACCEPT, CONTENT_TYPE},
