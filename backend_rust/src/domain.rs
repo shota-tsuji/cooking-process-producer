@@ -1,5 +1,6 @@
+pub mod dto;
+pub mod entity;
 pub mod error;
-mod process;
-pub mod recipe;
-pub mod resource;
-pub mod step;
+
+pub use self::dto::{recipe_dto::ScheduledRecipeDto, step_dto::ScheduledStepDto};
+pub use self::entity::{recipe::Recipe, resource::Resource, resource::ResourceId, step::Step};

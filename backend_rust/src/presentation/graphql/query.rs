@@ -247,7 +247,7 @@ impl Query {
         // Map usecase result to GraphQL Resource
         result
             .map(|r| Resource {
-                id: r.id as u64,
+                id: r.id.0 as u64,
                 name: r.name,
                 amount: r.amount,
             })
@@ -264,7 +264,7 @@ impl Query {
             .map_err(|e| e.message)?
             .into_iter()
             .map(|r| Resource {
-                id: r.id as u64,
+                id: r.id.0 as u64,
                 name: r.name,
                 amount: r.amount,
             })

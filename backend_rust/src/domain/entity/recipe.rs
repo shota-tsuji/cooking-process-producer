@@ -1,4 +1,4 @@
-use crate::domain::step::Step;
+use crate::domain::Step;
 
 pub struct Recipe {
     pub id: String,

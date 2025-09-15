@@ -1,6 +1,6 @@
 use crate::application::repository::resource_repository::ResourceRepository;
 use crate::application::usecase::interface::AbstractUseCase;
-use crate::domain::resource::Resource;
+use crate::domain::Resource;
 use async_trait::async_trait;
 
 pub struct GetAllResourcesUsecase<'a> {
@@ -35,10 +35,9 @@ impl<'a> AbstractUseCase<Vec<Resource>> for GetAllResourcesUsecase<'a> {
 mod tests {
     use super::*;
 
-    use crate::{
-        application::repository::resource_repository::MockResourceRepository,
-        domain::resource::Resource,
-    };
+    use crate::application::repository::resource_repository::MockResourceRepository;
+    use crate::domain::Resource;
+    use crate::domain::entity::resource::ResourceId;
 
     #[tokio::test]
     async fn test_should_return_all_results() {
@@ -49,12 +48,12 @@ mod tests {
             .returning(|| {
                 Ok(vec![
                     Resource {
-                        id: 1,
+                        id: ResourceId(1),
                         name: String::from("Resource 1"),
                         amount: 10,
                     },
                     Resource {
-                        id: 2,
+                        id: ResourceId(2),
                         name: String::from("Resource 2"),
                         amount: 20,
                     },
@@ -65,12 +64,12 @@ mod tests {
         let result = get_all_resources_usecase.execute().await.unwrap();
 
         let resource1 = Resource {
-            id: 1,
+            id: ResourceId(1),
             name: String::from("Resource 1"),
             amount: 10,
         };
         let resource2 = Resource {
-            id: 2,
+            id: ResourceId(2),
             name: String::from("Resource 2"),
             amount: 20,
         };

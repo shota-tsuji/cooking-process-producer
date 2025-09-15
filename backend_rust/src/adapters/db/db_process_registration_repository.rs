@@ -1,5 +1,6 @@
 use crate::adapters::db::mysql::entity as db_entity;
 use crate::application::repository::process_repository::ProcessRepository;
+use crate::domain::error::AsyncDynError;
 use async_trait::async_trait;
 use sea_orm::*;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
@@ -14,7 +15,7 @@ impl ProcessRepository for DbProcessRepository {
         &self,
         process_id: String,
         recipe_id_list: Vec<String>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<AsyncDynError>> {
         let process = db_entity::processes::ActiveModel {
             id: Set(process_id.clone()),
             name: Set("process".to_string()),

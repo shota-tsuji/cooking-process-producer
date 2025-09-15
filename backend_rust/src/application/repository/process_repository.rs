@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use std::error::Error;
 
+use crate::domain::error::AsyncDynError;
 #[cfg(test)]
 use mockall::{predicate::*, *};
 
@@ -12,5 +12,5 @@ pub trait ProcessRepository: Send + Sync {
         &self,
         process_id: String,
         recipe_id_list: Vec<String>,
-    ) -> Result<(), Box<dyn Error>>;
+    ) -> Result<(), Box<AsyncDynError>>;
 }

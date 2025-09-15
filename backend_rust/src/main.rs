@@ -5,6 +5,7 @@ use axum::{Router, extract::Extension};
 use cpp_backend::adapters::db::db_process_registration_repository::DbProcessRepository;
 use cpp_backend::adapters::db::db_recipe_repository::DbRecipeRepository;
 use cpp_backend::adapters::db::db_resource_repository::DbResourceRepository;
+use cpp_backend::adapters::grpc::cooking::process_service_client;
 use cpp_backend::presentation::{
     controller::graphql_controller::graphql_handler,
     graphql::{mutation::Mutation, query::Query},
@@ -18,6 +19,7 @@ use serde::Deserialize;
 use std::env;
 use std::fs::File;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
@@ -70,11 +72,16 @@ async fn main() {
     let process_registration_repository = Arc::new(DbProcessRepository {
         db_connection: db.clone(),
     });
-    let process_client = proto::process_service_client::ProcessServiceClient::connect(
-        config.process_grpc_server_url,
-    )
-    .await
-    .unwrap();
+    let process_client = Arc::new(Mutex::new(
+        process_service_client::ProcessServiceClient::connect(config.process_grpc_server_url)
+            .await
+            .unwrap(),
+    ));
+    let process_service = Arc::new(
+        cpp_backend::adapters::grpc::process_service_client::GrpcProcessServiceClient {
+            client: process_client.clone(),
+        },
+    );
     /*
     let request = tonic::Request::new(CalculateProcessRequest {
         recipes: vec![Recipe {
@@ -91,7 +98,7 @@ async fn main() {
         .data(resource_repository.clone())
         .data(recipe_repository.clone())
         .data(process_registration_repository.clone())
-        .data(process_client.clone())
+        .data(process_service.clone())
         .finish();
 
     let cors = CorsLayer::new()
