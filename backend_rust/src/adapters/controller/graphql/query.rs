@@ -9,14 +9,14 @@ use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUseca
 use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
 use crate::application::usecase::get_one_resource_by_id_usecase::GetOneResourceByIdUseCase;
 use crate::application::usecase::interface::AbstractUseCase;
-use crate::presentation::graphql::mutation::Mutation;
-use crate::presentation::graphql::object::{Process, Resource, ResourceInfo, StepResult};
+use crate::adapters::controller::graphql::mutation::Mutation;
+use crate::adapters::controller::graphql::object::{Process, Resource, ResourceInfo, StepResult};
 
 //pub mod hello_world {
 //    tonic::include_proto!("proto", "cooking", "v1");
 //}
 
-use super::object::{Recipe, RecipeDetail};
+use crate::adapters::controller::graphql::object::{Recipe, RecipeDetail};
 
 pub type QuerySchema = Schema<Query, Mutation, EmptySubscription>;
 

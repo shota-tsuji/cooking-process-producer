@@ -1,10 +1,10 @@
-use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
+use crate::adapters::controller::graphql::object::{CreateRecipeDetailInput, RecipeDetail, Step};
 use crate::adapters::repository::MysqlProcessRepository;
 use crate::adapters::repository::MysqlRecipeRepository;
 use crate::adapters::repository::MysqlResourceRepository;
 use crate::application::usecase::calculate_one_process_use_case::CalculateOneProcessUseCase;
 use crate::application::usecase::interface::AbstractUseCase;
-use crate::presentation::graphql::object::{
+use crate::adapters::controller::graphql::object::{
     CreateProcessInput, CreateResourceInput, CreateStepInput, ProcessId, Resource,
     UpdateResourceInput,
 };
