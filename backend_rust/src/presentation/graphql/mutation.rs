@@ -1,7 +1,7 @@
 use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
-use crate::adapters::repository::db_process_registration_repository::DbProcessRepository;
-use crate::adapters::repository::db_recipe_repository::DbRecipeRepository;
-use crate::adapters::repository::db_resource_repository::DbResourceRepository;
+use crate::adapters::repository::mysql::db_process_registration_repository::DbProcessRepository;
+use crate::adapters::repository::mysql::db_recipe_repository::DbRecipeRepository;
+use crate::adapters::repository::mysql::db_resource_repository::DbResourceRepository;
 use crate::application::usecase::calculate_one_process_use_case::CalculateOneProcessUseCase;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::presentation::graphql::object::{
