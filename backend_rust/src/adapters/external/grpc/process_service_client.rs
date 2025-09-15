@@ -1,9 +1,9 @@
-use crate::adapters::grpc::cooking::CalculateProcessRequest;
-use crate::adapters::grpc::cooking::Recipe as RecipeMessage;
-use crate::adapters::grpc::cooking::Resource as ResourceMessage;
-use crate::adapters::grpc::cooking::process_service_client::ProcessServiceClient as GrpcClient;
-use crate::adapters::grpc::recipe_mapper::RecipeMapper;
-use crate::adapters::grpc::resource_mapper::ResourceMapper;
+use crate::adapters::external::grpc::cooking::CalculateProcessRequest;
+use crate::adapters::external::grpc::cooking::Recipe as RecipeMessage;
+use crate::adapters::external::grpc::cooking::Resource as ResourceMessage;
+use crate::adapters::external::grpc::cooking::process_service_client::ProcessServiceClient as GrpcClient;
+use crate::adapters::external::grpc::recipe_mapper::RecipeMapper;
+use crate::adapters::external::grpc::resource_mapper::ResourceMapper;
 use crate::application::mapper::grpc_mapper::{EntityToGrpcRequestMapper, GrpcResponseToDtoMapper};
 use crate::application::port::ProcessServicePort;
 use crate::domain::error::AsyncDynError;
