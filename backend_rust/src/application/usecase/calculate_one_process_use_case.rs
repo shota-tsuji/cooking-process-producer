@@ -70,18 +70,15 @@ impl<'a> AbstractUseCase<String> for CalculateOneProcessUseCase<'a> {
                 message: String::from("Cannot get all resources"),
                 error: Some(e),
             })?;
-        let scheduled_recipes = self
+        let _scheduled_recipes = self
             .process_service
             .calculate_process(recipes, resources)
-            .await;
-        if let Err(e) = scheduled_recipes {
-            let e = ApiError {
+            .await
+            .map_err(|e| ApiError {
                 code: 400,
                 message: String::from("Cannot calculate process"),
                 error: Some(e),
-            };
-            return Err(e);
-        }
+            });
         println!("Calculate process successfully");
         Ok(process_id)
     }
