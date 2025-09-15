@@ -1,4 +1,4 @@
-use crate::adapters::grpc::cooking::{Step as StepMessage, StepWithSchedule};
+use crate::adapters::external::grpc::cooking::{Step as StepMessage, StepWithSchedule};
 use crate::application::mapper::grpc_mapper::{EntityToGrpcRequestMapper, GrpcResponseToDtoMapper};
 use crate::domain::{ScheduledStepDto, Step};
 

@@ -1,4 +1,4 @@
-use crate::adapters::grpc::cooking::Resource as ResourceMessage;
+use crate::adapters::external::grpc::cooking::Resource as ResourceMessage;
 use crate::application::mapper::grpc_mapper::{EntityToGrpcRequestMapper, GrpcResponseToDtoMapper};
 use crate::domain::Resource;
 use crate::domain::dto::resource_dto::ResourceDto;

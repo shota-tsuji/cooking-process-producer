@@ -1,11 +1,11 @@
 use async_graphql::{EmptySubscription, Schema};
-
 use axum::routing::post;
 use axum::{Router, extract::Extension};
 use cpp_backend::adapters::controller::graphql::graphql_controller::graphql_handler;
 use cpp_backend::adapters::controller::graphql::mutation::Mutation;
 use cpp_backend::adapters::controller::graphql::query::Query;
-use cpp_backend::adapters::grpc::cooking::process_service_client;
+use cpp_backend::adapters::external::grpc::cooking::process_service_client;
+use cpp_backend::adapters::external::grpc::process_service_client::GrpcProcessServiceClient;
 use cpp_backend::adapters::repository::MysqlProcessRepository;
 use cpp_backend::adapters::repository::MysqlRecipeRepository;
 use cpp_backend::adapters::repository::MysqlResourceRepository;
@@ -76,20 +76,9 @@ async fn main() {
             .await
             .unwrap(),
     ));
-    let process_service = Arc::new(
-        cpp_backend::adapters::grpc::process_service_client::GrpcProcessServiceClient {
-            client: process_client.clone(),
-        },
-    );
-    /*
-    let request = tonic::Request::new(CalculateProcessRequest {
-        recipes: vec![Recipe {
-            id: "example".to_string(),
-            steps: vec![],
-        }],
+    let process_service = Arc::new(GrpcProcessServiceClient {
+        client: process_client.clone(),
     });
-    let response = process_client.calculate_process(request).await.unwrap();
-     */
 
     let query = Query {};
     let mutation = Mutation::new(db2);

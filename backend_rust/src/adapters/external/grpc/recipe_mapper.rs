@@ -1,5 +1,5 @@
-use crate::adapters::grpc::cooking::{Recipe as RecipeMessage, RecipeWithSchedule};
-use crate::adapters::grpc::step_mapper::StepMapper;
+use crate::adapters::external::grpc::cooking::{Recipe as RecipeMessage, RecipeWithSchedule};
+use crate::adapters::external::grpc::step_mapper::StepMapper;
 use crate::application::mapper::grpc_mapper::{EntityToGrpcRequestMapper, GrpcResponseToDtoMapper};
 use crate::domain::{Recipe, ScheduledRecipeDto};
 

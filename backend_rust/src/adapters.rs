@@ -1,3 +1,3 @@
 pub mod controller;
-pub mod grpc;
+pub mod external;
 pub mod repository;

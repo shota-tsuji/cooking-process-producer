@@ -15,7 +15,7 @@ use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use std::sync::Arc;
 use ulid::Ulid;
 
-use crate::adapters::grpc::process_service_client::GrpcProcessServiceClient;
+use crate::adapters::external::grpc::process_service_client::GrpcProcessServiceClient;
 use crate::adapters::repository::mysql::entity as db_entity;
 
 pub struct Mutation {
