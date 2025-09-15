@@ -1,12 +1,48 @@
 import grpc
 import logging
 from concurrent import futures
-from src.proto.cooking.v1 import process_pb2
-from src.proto.cooking.v1 import process_pb2_grpc
+#from src.proto.cooking.v1 import process_pb2
+#from src.proto.cooking.v1 import process_pb2_grpc
+from src.adapter.grpc.generated.proto.cooking.v1 import (
+    RecipeWithSchedule, StepWithSchedule, Resource, ProcessServiceBase, CalculateProcessRequest, CalculateProcessResponse
+)
+
+from grpclib.server import Server
+import asyncio
 
 import main
 
-class ProcessService(process_pb2_grpc.ProcessServiceServicer):
+class ProcessServiceImpl(ProcessServiceBase):
+
+    async def calculate_process(self, calculate_process_request: CalculateProcessRequest) -> CalculateProcessResponse:
+        #recipe_lists = list(map(toRecipeData, request.recipes))
+
+        recipes = [
+            RecipeWithSchedule(
+                id="1",
+                steps=[
+                    StepWithSchedule(
+                        id="a",
+                        duration_minutes=10,
+                        resource_id="abc",
+                        start_time=1000,
+                    )
+                ],
+            ),
+            RecipeWithSchedule(
+                id="2",
+                steps=[
+                    StepWithSchedule(
+                        id="b",
+                        duration_minutes=20,
+                        resource_id="abc",
+                        start_time=2000,
+                    )
+                ],
+            ),
+        ]
+
+        return CalculateProcessResponse(recipes=recipes)
 
     def CalculateProcess(self, request, context):
         #recipe_lists = list(map(toRecipeData, request.recipes))
@@ -75,17 +111,25 @@ class ProcessService(process_pb2_grpc.ProcessServiceServicer):
 #def toGrpcResourceInfo(resource_info):
 #    return helloworld_pb2.ResourceInfo(id=resource_info.id, amount=resource_info.amount, isUsedMultipleResources=resource_info.isUsedMultipleResources, used_resources_count=resource_info.used_resources_count)
 
-def serve():
-    port = '50051'
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    #helloworld_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
-    process_pb2_grpc.add_ProcessServiceServicer_to_server(ProcessService(), server)
-    server.add_insecure_port('[::]:' + port)
-    server.start()
-    print("Server started, listening on " + port)
-    server.wait_for_termination()
+async def start_server(host: str = "127.0.0.1", port: int = 50051) -> None:
+    server = Server([ProcessServiceImpl()])
+    await server.start(host, port)
+    await server.wait_closed()
 
+if __name__ == "__main__":
+    asyncio.run(start_server())
 
-if __name__ == '__main__':
-    logging.basicConfig()
-    serve()
+#def serve():
+#    port = '50051'
+#    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+#    #helloworld_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
+#    process_pb2_grpc.add_ProcessServiceServicer_to_server(ProcessServiceImpl(), server)
+#    server.add_insecure_port('[::]:' + port)
+#    server.start()
+#    print("Server started, listening on " + port)
+#    server.wait_for_termination()
+#
+#
+#if __name__ == '__main__':
+#    logging.basicConfig()
+#    serve()

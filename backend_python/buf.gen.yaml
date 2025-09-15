@@ -3,6 +3,6 @@ version: v2
 clean: true
 plugins:
   - local: .venv/bin/protoc-gen-python_betterproto
-    out: src/grpc
+    out: src/adapter/grpc/generated
 inputs:
   - directory: ../proto
