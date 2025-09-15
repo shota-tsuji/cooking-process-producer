@@ -1,5 +1,7 @@
 use crate::adapters::db::mysql::entity as db_entity;
-use crate::application::repository::resource_repository::ResourceRepository;
+use crate::adapters::db::mysql::resource_mapper::ResourceMapper;
+use crate::application::mapper::db_mapper::DbMapper;
+use crate::application::repository::ResourceRepository;
 use crate::domain::Resource;
 use crate::domain::entity::resource::ResourceId;
 use crate::domain::error::AsyncDynError;
@@ -37,6 +39,22 @@ impl ResourceRepository for DbResourceRepository {
                 "Resource not found",
             ))),
         }
+    }
+
+    async fn get_resources_by_ids(
+        &self,
+        resource_ids: Vec<ResourceId>,
+    ) -> Result<Vec<Resource>, Box<AsyncDynError>> {
+        use db_entity::resources;
+        let ids: Vec<u64> = resource_ids.iter().map(|rid| rid.0 as u64).collect();
+        let models = resources::Entity::find()
+            .filter(resources::Column::Id.is_in(ids))
+            .all(&*self.db_connection)
+            .await
+            .map_err(|e| Box::new(std::io::Error::other(e)))?;
+
+        let resources: Vec<Resource> = models.into_iter().map(ResourceMapper::to_entity).collect();
+        Ok(resources)
     }
 
     async fn get_all_resources(&self) -> Result<Vec<Resource>, Box<AsyncDynError>> {
