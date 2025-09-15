@@ -1,6 +1,6 @@
 use crate::application::port::ProcessServicePort;
-use crate::application::repository::process_repository::ProcessRepository;
-use crate::application::repository::recipe_repository::RecipeRepository;
+use crate::application::repository::ProcessRepository;
+use crate::application::repository::RecipeRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::error::ApiError;
 use async_trait::async_trait;

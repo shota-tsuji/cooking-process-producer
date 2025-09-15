@@ -1,4 +1,4 @@
-use crate::application::repository::recipe_repository::RecipeRepository;
+use crate::application::repository::RecipeRepository;
 use sea_orm::DatabaseConnection;
 use std::sync::Arc;
 
