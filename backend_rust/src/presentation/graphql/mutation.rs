@@ -1,7 +1,7 @@
 use super::object::{CreateRecipeDetailInput, RecipeDetail, Step};
-use crate::adapters::db::db_process_registration_repository::DbProcessRepository;
-use crate::adapters::db::db_recipe_repository::DbRecipeRepository;
-use crate::adapters::db::db_resource_repository::DbResourceRepository;
+use crate::adapters::repository::MysqlProcessRepository;
+use crate::adapters::repository::MysqlRecipeRepository;
+use crate::adapters::repository::MysqlResourceRepository;
 use crate::application::usecase::calculate_one_process_use_case::CalculateOneProcessUseCase;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::presentation::graphql::object::{
@@ -15,8 +15,8 @@ use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use std::sync::Arc;
 use ulid::Ulid;
 
-use crate::adapters::db::mysql::entity as db_entity;
 use crate::adapters::grpc::process_service_client::GrpcProcessServiceClient;
+use crate::adapters::repository::mysql::entity as db_entity;
 
 pub struct Mutation {
     db: DatabaseConnection,
@@ -175,13 +175,13 @@ impl Mutation {
         recipe_id_list: CreateProcessInput,
     ) -> Result<ProcessId, String> {
         let process_repository = ctx
-            .data::<Arc<DbProcessRepository>>()
+            .data::<Arc<MysqlProcessRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
         let recipe_repository = ctx
-            .data::<Arc<DbRecipeRepository>>()
+            .data::<Arc<MysqlRecipeRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
         let resource_repository = ctx
-            .data::<Arc<DbResourceRepository>>()
+            .data::<Arc<MysqlResourceRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
         let service = ctx
             .data::<Arc<GrpcProcessServiceClient>>()

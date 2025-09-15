@@ -1,7 +1,7 @@
-use crate::adapters::db::mysql::entity as db_entity;
-use crate::adapters::db::mysql::resource_mapper::ResourceMapper;
+use crate::adapters::repository::mysql::entity as db_entity;
+use crate::adapters::repository::mysql::resource_mapper::ResourceMapper;
 use crate::application::mapper::db_mapper::DbMapper;
-use crate::application::repository::ResourceRepository;
+use crate::application::port::repository::ResourceRepository;
 use crate::domain::Resource;
 use crate::domain::entity::resource::ResourceId;
 use crate::domain::error::AsyncDynError;
@@ -10,12 +10,12 @@ use sea_orm::DatabaseConnection;
 use sea_orm::*;
 use std::sync::Arc;
 
-pub struct DbResourceRepository {
+pub struct MysqlResourceRepository {
     pub db_connection: Arc<DatabaseConnection>,
 }
 
 #[async_trait]
-impl ResourceRepository for DbResourceRepository {
+impl ResourceRepository for MysqlResourceRepository {
     async fn get_resource_by_id(&self, id: i32) -> Result<Resource, Box<AsyncDynError>> {
         let model = db_entity::resources::Entity::find_by_id(id as u64)
             .one(&*self.db_connection)

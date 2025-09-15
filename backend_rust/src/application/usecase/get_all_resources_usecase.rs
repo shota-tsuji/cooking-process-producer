@@ -1,4 +1,4 @@
-use crate::application::repository::resource_repository::ResourceRepository;
+use crate::application::port::repository::resource_repository::ResourceRepository;
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::Resource;
 use async_trait::async_trait;
@@ -35,7 +35,7 @@ impl<'a> AbstractUseCase<Vec<Resource>> for GetAllResourcesUsecase<'a> {
 mod tests {
     use super::*;
 
-    use crate::application::repository::resource_repository::MockResourceRepository;
+    use crate::application::port::repository::resource_repository::MockResourceRepository;
     use crate::domain::Resource;
     use crate::domain::entity::resource::ResourceId;
 

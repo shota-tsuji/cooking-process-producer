@@ -1,6 +1,6 @@
 use crate::application::port::ProcessServicePort;
-use crate::application::repository::RecipeRepository;
-use crate::application::repository::{ProcessRepository, ResourceRepository};
+use crate::application::port::repository::RecipeRepository;
+use crate::application::port::repository::{ProcessRepository, ResourceRepository};
 use crate::application::usecase::interface::AbstractUseCase;
 use crate::domain::ResourceId;
 use crate::domain::error::ApiError;

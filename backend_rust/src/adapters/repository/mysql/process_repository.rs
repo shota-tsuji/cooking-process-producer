@@ -1,16 +1,16 @@
-use crate::adapters::db::mysql::entity as db_entity;
-use crate::application::repository::process_repository::ProcessRepository;
+use crate::adapters::repository::mysql::entity as db_entity;
+use crate::application::port::repository::process_repository::ProcessRepository;
 use crate::domain::error::AsyncDynError;
 use async_trait::async_trait;
 use sea_orm::*;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use std::sync::Arc;
 
-pub struct DbProcessRepository {
+pub struct MysqlProcessRepository {
     pub db_connection: Arc<DatabaseConnection>,
 }
 #[async_trait]
-impl ProcessRepository for DbProcessRepository {
+impl ProcessRepository for MysqlProcessRepository {
     async fn register_process(
         &self,
         process_id: String,
