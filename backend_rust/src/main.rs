@@ -1,14 +1,17 @@
 use async_graphql::{EmptySubscription, Schema};
 
 use axum::routing::post;
-use axum::{extract::Extension, Router};
+use axum::{Router, extract::Extension};
+use cpp_backend::adapters::controller::graphql::graphql_controller::graphql_handler;
+use cpp_backend::adapters::controller::graphql::mutation::Mutation;
+use cpp_backend::adapters::controller::graphql::query::Query;
 use cpp_backend::adapters::grpc::cooking::process_service_client;
 use cpp_backend::adapters::repository::MysqlProcessRepository;
 use cpp_backend::adapters::repository::MysqlRecipeRepository;
 use cpp_backend::adapters::repository::MysqlResourceRepository;
 use http::{
-    header::{ACCEPT, CONTENT_TYPE},
     Method,
+    header::{ACCEPT, CONTENT_TYPE},
 };
 use sea_orm::{ConnectOptions, Database};
 use serde::Deserialize;
@@ -21,9 +24,6 @@ use tower_http::cors::CorsLayer;
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::{DefaultOnRequest, TraceLayer};
 use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt};
-use cpp_backend::adapters::controller::graphql::graphql_controller::graphql_handler;
-use cpp_backend::adapters::controller::graphql::mutation::Mutation;
-use cpp_backend::adapters::controller::graphql::query::Query;
 
 pub mod proto {
     tonic::include_proto!("proto.cooking.v1");

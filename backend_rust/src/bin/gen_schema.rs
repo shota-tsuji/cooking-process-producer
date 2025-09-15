@@ -1,8 +1,8 @@
 use async_graphql::{EmptySubscription, Schema};
-use sea_orm::{ConnectOptions, Database};
-use std::env;
 use cpp_backend::adapters::controller::graphql::mutation::Mutation;
 use cpp_backend::adapters::controller::graphql::query::Query;
+use sea_orm::{ConnectOptions, Database};
+use std::env;
 
 #[tokio::main]
 async fn main() {
