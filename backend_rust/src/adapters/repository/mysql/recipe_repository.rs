@@ -12,12 +12,12 @@ use crate::domain::error::AsyncDynError;
 use async_trait::async_trait;
 use sea_orm::*;
 
-pub struct DbRecipeRepository {
+pub struct MysqlRecipeRepository {
     pub db_connection: Arc<DatabaseConnection>,
 }
 
 #[async_trait]
-impl RecipeRepository for DbRecipeRepository {
+impl RecipeRepository for MysqlRecipeRepository {
     async fn get_recipe_by_id(&self, recipe_id: String) -> Result<Recipe, Box<AsyncDynError>> {
         let mut recipe_with_steps = db_entity::recipes::Entity::find_by_id(recipe_id.clone())
             .find_with_related(db_entity::steps::Entity)

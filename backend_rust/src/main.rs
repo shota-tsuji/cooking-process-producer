@@ -3,9 +3,9 @@ use async_graphql::{EmptySubscription, Schema};
 use axum::routing::post;
 use axum::{Router, extract::Extension};
 use cpp_backend::adapters::grpc::cooking::process_service_client;
-use cpp_backend::adapters::repository::mysql::db_process_registration_repository::DbProcessRepository;
-use cpp_backend::adapters::repository::mysql::db_recipe_repository::DbRecipeRepository;
-use cpp_backend::adapters::repository::mysql::db_resource_repository::DbResourceRepository;
+use cpp_backend::adapters::repository::MysqlProcessRepository;
+use cpp_backend::adapters::repository::MysqlRecipeRepository;
+use cpp_backend::adapters::repository::MysqlResourceRepository;
 use cpp_backend::presentation::{
     controller::graphql_controller::graphql_handler,
     graphql::{mutation::Mutation, query::Query},
@@ -63,13 +63,13 @@ async fn main() {
     let ops = ConnectOptions::new(config.database_url);
     let db = Arc::new(Database::connect(ops.clone()).await.unwrap());
     let db2 = Database::connect(ops.clone()).await.unwrap();
-    let resource_repository = Arc::new(DbResourceRepository {
+    let resource_repository = Arc::new(MysqlResourceRepository {
         db_connection: db.clone(),
     });
-    let recipe_repository = Arc::new(DbRecipeRepository {
+    let recipe_repository = Arc::new(MysqlRecipeRepository {
         db_connection: db.clone(),
     });
-    let process_registration_repository = Arc::new(DbProcessRepository {
+    let process_registration_repository = Arc::new(MysqlProcessRepository {
         db_connection: db.clone(),
     });
     let process_client = Arc::new(Mutex::new(

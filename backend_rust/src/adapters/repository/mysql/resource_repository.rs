@@ -10,12 +10,12 @@ use sea_orm::DatabaseConnection;
 use sea_orm::*;
 use std::sync::Arc;
 
-pub struct DbResourceRepository {
+pub struct MysqlResourceRepository {
     pub db_connection: Arc<DatabaseConnection>,
 }
 
 #[async_trait]
-impl ResourceRepository for DbResourceRepository {
+impl ResourceRepository for MysqlResourceRepository {
     async fn get_resource_by_id(&self, id: i32) -> Result<Resource, Box<AsyncDynError>> {
         let model = db_entity::resources::Entity::find_by_id(id as u64)
             .one(&*self.db_connection)

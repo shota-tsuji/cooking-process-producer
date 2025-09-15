@@ -2,8 +2,8 @@ use async_graphql::{Context, EmptySubscription, ID, Object, Schema};
 use std::sync::Arc;
 
 use crate::adapters::recipe_mapper::{RecipeDetailMapper, RecipeMapper};
-use crate::adapters::repository::mysql::db_recipe_repository::DbRecipeRepository;
-use crate::adapters::repository::mysql::db_resource_repository::DbResourceRepository;
+use crate::adapters::repository::MysqlRecipeRepository;
+use crate::adapters::repository::MysqlResourceRepository;
 use crate::application::mapper::api_mapper::ApiMapper;
 use crate::application::usecase::get_all_resources_usecase::GetAllResourcesUsecase;
 use crate::application::usecase::get_one_recipe_by_id_usecase::GetOneRecipeByIdUseCase;
@@ -26,7 +26,7 @@ pub struct Query {}
 impl Query {
     async fn recipe_detail(&self, ctx: &Context<'_>, id: ID) -> Result<RecipeDetail, String> {
         let repository = ctx
-            .data::<Arc<DbRecipeRepository>>()
+            .data::<Arc<MysqlRecipeRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
 
         let id = id.to_string();
@@ -39,7 +39,7 @@ impl Query {
 
     async fn recipes(&self, _ctx: &Context<'_>) -> Result<Vec<Recipe>, String> {
         let repository = _ctx
-            .data::<Arc<DbRecipeRepository>>()
+            .data::<Arc<MysqlRecipeRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
         let use_case =
             crate::application::usecase::get_all_recipes_usecase::GetAllRecipesUseCase::new(
@@ -231,7 +231,7 @@ impl Query {
     async fn resource(&self, ctx: &Context<'_>, id: ID) -> Result<Resource, String> {
         // Extract repository instance from context
         let repository = ctx
-            .data::<Arc<DbResourceRepository>>()
+            .data::<Arc<MysqlResourceRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
 
         // Parse id to i32 (adjust if your domain uses u64)
@@ -256,7 +256,7 @@ impl Query {
 
     async fn resources(&self, _ctx: &Context<'_>) -> Result<Vec<Resource>, String> {
         let repository = _ctx
-            .data::<Arc<DbResourceRepository>>()
+            .data::<Arc<MysqlResourceRepository>>()
             .map_err(|_| "Repository not found".to_string())?;
         let usecase = GetAllResourcesUsecase::new(repository.as_ref());
         let result = usecase.execute().await;

@@ -6,11 +6,11 @@ use sea_orm::*;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, Set};
 use std::sync::Arc;
 
-pub struct DbProcessRepository {
+pub struct MysqlProcessRepository {
     pub db_connection: Arc<DatabaseConnection>,
 }
 #[async_trait]
-impl ProcessRepository for DbProcessRepository {
+impl ProcessRepository for MysqlProcessRepository {
     async fn register_process(
         &self,
         process_id: String,
