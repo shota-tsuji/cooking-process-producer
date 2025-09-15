@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Eq, PartialEq, Default)]
+#[derive(Debug, Clone, Eq, PartialEq, Default, Hash)]
 pub struct ResourceId(pub i32);
 
 #[derive(Debug, Clone, Eq, PartialEq, Default)]

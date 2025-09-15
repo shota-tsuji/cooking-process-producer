@@ -1,9 +1,11 @@
 use crate::application::port::ProcessServicePort;
-use crate::application::repository::ProcessRepository;
 use crate::application::repository::RecipeRepository;
+use crate::application::repository::{ProcessRepository, ResourceRepository};
 use crate::application::usecase::interface::AbstractUseCase;
+use crate::domain::ResourceId;
 use crate::domain::error::ApiError;
 use async_trait::async_trait;
+use std::collections::HashSet;
 use ulid::Ulid;
 
 pub struct CalculateOneProcessUseCase<'a> {
@@ -11,6 +13,7 @@ pub struct CalculateOneProcessUseCase<'a> {
     pub repository: &'a dyn ProcessRepository,
     pub process_service: &'a dyn ProcessServicePort,
     pub recipe_repository: &'a dyn RecipeRepository,
+    pub resource_repository: &'a dyn ResourceRepository,
 }
 
 impl<'a> CalculateOneProcessUseCase<'a> {
@@ -19,12 +22,14 @@ impl<'a> CalculateOneProcessUseCase<'a> {
         recipe_id_list: &'a Vec<String>,
         process_service: &'a dyn ProcessServicePort,
         recipe_repository: &'a dyn RecipeRepository,
+        resource_repository: &'a dyn ResourceRepository,
     ) -> Self {
         CalculateOneProcessUseCase {
             repository,
             recipe_id_list,
             process_service,
             recipe_repository,
+            resource_repository,
         }
     }
 }
@@ -50,7 +55,25 @@ impl<'a> AbstractUseCase<String> for CalculateOneProcessUseCase<'a> {
                 message: String::from("Cannot get recipes by ids"),
                 error: Some(e),
             })?;
-        let scheduled_recipes = self.process_service.calculate_process(recipes).await;
+        let unique_resource_ids: Vec<ResourceId> = recipes
+            .iter()
+            .flat_map(|r| r.resource_ids())
+            .collect::<HashSet<_>>() // deduplicate
+            .into_iter()
+            .collect(); // convert back to Vec
+        let resources = self
+            .resource_repository
+            .get_resources_by_ids(unique_resource_ids)
+            .await
+            .map_err(|e| ApiError {
+                code: 400,
+                message: String::from("Cannot get all resources"),
+                error: Some(e),
+            })?;
+        let scheduled_recipes = self
+            .process_service
+            .calculate_process(recipes, resources)
+            .await;
         if let Err(e) = scheduled_recipes {
             let e = ApiError {
                 code: 400,
