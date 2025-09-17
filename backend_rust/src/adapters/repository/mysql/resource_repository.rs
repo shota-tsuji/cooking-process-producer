@@ -82,8 +82,8 @@ impl ResourceRepository for MysqlResourceRepository {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::adapters::repository::mysql::entity::resources;
-    use sea_orm::{ActiveModelTrait, Database, DbBackend, Schema, Set};
+
+    use sea_orm::Database;
     use std::sync::Arc;
     //use testcontainers::{clients, RunnableImage};
     use testcontainers_modules::mysql::Mysql;
@@ -120,7 +120,16 @@ mod tests {
         };
         println!("Connected to MySQL");
 
+        migration::seed::seed_resource_repository_medium_test(&db).await;
+        /*
+        let migration_img = RunnableImage::from("my-seaorm-migration:latest")
+            .with_env_var("DATABASE_URL", &db_url)
+            .with_cmd(vec!["up"]); // run `migration up`
+        let migration_img = Image::name("my-seaorm-migration")
+        let _migrator = docker.run(migration_img);
+         */
         // Create table
+        /*
         let _schema = Schema::new(DbBackend::MySql);
         //let stmt = schema.create_table_from_entity(resources::Entity).to_string();
         let q = "CREATE TABLE IF NOT EXISTS resources (
@@ -141,6 +150,7 @@ mod tests {
             amount: Set(2),
         };
         resource.insert(&db).await.unwrap();
+         */
 
         let repo = MysqlResourceRepository {
             db_connection: Arc::new(db),

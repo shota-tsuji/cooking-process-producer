@@ -1,19 +1,13 @@
 pub use sea_orm_migration::prelude::*;
 
-mod m20220101_000001_create_table;
-mod m20250909_110532_add_process_steps_table;
-
+pub mod base;
 pub mod seed;
-mod base;
 
 pub struct Migrator;
 
 #[async_trait::async_trait]
 impl MigratorTrait for Migrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
-        vec![
-            Box::new(m20220101_000001_create_table::Migration),
-            Box::new(m20250909_110532_add_process_steps_table::Migration),
-        ]
+        base::base_migrations()
     }
 }

@@ -948,6 +948,7 @@ dependencies = [
  "async-trait",
  "axum 0.6.20",
  "http 0.2.12",
+ "migration",
  "mockall",
  "prost 0.14.1",
  "sea-orm",
