@@ -13,7 +13,7 @@ pre-commit:
       root: backend_rust
       run: cargo clippy --all-targets --all-features -- -D warnings
     rust-lint-fix:
-      root: backend_rust
+      #root: backend_rust
       run: cargo clippy --all-targets --all-features --fix --allow-dirty -- -D warnings
     rust-test:
       root: backend_rust
