@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "backend_rust",  # your main application crate
+    "migration"     # new migration crate
+]
+resolver = "2"     # recommended for workspaces
