@@ -91,74 +91,25 @@ mod tests {
     use tokio;
 
     #[tokio::test]
-    async fn test_get_resource_by_id() {
+    async fn test_get_resource_by_id() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // Start MySQL container
-        //let docker = clients::Cli::default();
-        let node = AsyncRunner::start(Mysql::default()).await.unwrap();
-        //let node = docker.run(node);
-
-        println!(
-            "MySQL is running on port: {}",
-            node.get_host_port_ipv4(3306).await.unwrap()
-        );
-
-        let port = node.get_host_port_ipv4(3306).await.unwrap();
-        let host = node.get_host().await.unwrap();
+        let node = AsyncRunner::start(Mysql::default()).await?;
+        let port = node.get_host_port_ipv4(3306).await?;
+        let host = node.get_host().await?;
         let url = format!("mysql://root@{}:{}/test", host, port,);
 
-        println!("URL: {}", url);
-        // Wait for MySQL to be ready
-        let db = loop {
-            match Database::connect(&url).await {
-                Ok(conn) => break conn,
-                Err(e) => {
-                    println!("Error connecting to MySQL: {}", e);
-                    tokio::time::sleep(std::time::Duration::from_secs(1)).await
-                }
-            }
-            println!("Waiting for MySQL to be ready...");
-        };
-        println!("Connected to MySQL");
+        let db = Database::connect(&url).await?;
 
         migration::seed::seed_resource_repository_medium_test(&db).await;
-        /*
-        let migration_img = RunnableImage::from("my-seaorm-migration:latest")
-            .with_env_var("DATABASE_URL", &db_url)
-            .with_cmd(vec!["up"]); // run `migration up`
-        let migration_img = Image::name("my-seaorm-migration")
-        let _migrator = docker.run(migration_img);
-         */
-        // Create table
-        /*
-        let _schema = Schema::new(DbBackend::MySql);
-        //let stmt = schema.create_table_from_entity(resources::Entity).to_string();
-        let q = "CREATE TABLE IF NOT EXISTS resources (
-    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    name VARCHAR(140) NOT NULL,
-    amount INT NOT NULL,
-    PRIMARY KEY (id)
-);
-";
-        db.execute(Statement::from_string(DbBackend::MySql, q))
-            .await
-            .unwrap();
-
-        // Insert test data
-        let resource = resources::ActiveModel {
-            id: Set(1),
-            name: Set("Sugar".to_string()),
-            amount: Set(2),
-        };
-        resource.insert(&db).await.unwrap();
-         */
-
         let repo = MysqlResourceRepository {
             db_connection: Arc::new(db),
         };
 
-        let result = repo.get_resource_by_id(1).await.unwrap();
+        let result = repo.get_resource_by_id(1).await?;
+
         assert_eq!(result.id, ResourceId(1));
         assert_eq!(result.name, "Sugar");
         assert_eq!(result.amount, 2);
+        Ok(())
     }
 }
