@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "backend_rust",  # your main application crate
+    "migration"     # new migration crate
+]
+resolver = "2"     # recommended for workspaces
+
+[workspace.dependencies]
+sea-orm = { version = "1.1.0", features = [ "sqlx-mysql", "runtime-tokio", "macros", "mock" ] }

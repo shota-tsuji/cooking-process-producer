@@ -1,4 +1,4 @@
-use sea_orm_migration::{prelude::*, schema::*};
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -12,7 +12,12 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Recipes::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Recipes::Id).string_len(36).not_null().primary_key())
+                    .col(
+                        ColumnDef::new(Recipes::Id)
+                            .string_len(36)
+                            .not_null()
+                            .primary_key(),
+                    )
                     .col(ColumnDef::new(Recipes::Title).string_len(140).not_null())
                     .col(ColumnDef::new(Recipes::Description).string_len(1000))
                     .to_owned(),
@@ -25,7 +30,13 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Resources::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Resources::Id).big_unsigned().not_null().auto_increment().primary_key())
+                    .col(
+                        ColumnDef::new(Resources::Id)
+                            .big_unsigned()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
                     .col(ColumnDef::new(Resources::Name).string_len(140).not_null())
                     .col(ColumnDef::new(Resources::Amount).integer().not_null())
                     .to_owned(),
@@ -38,7 +49,12 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Processes::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Processes::Id).string_len(36).not_null().primary_key())
+                    .col(
+                        ColumnDef::new(Processes::Id)
+                            .string_len(36)
+                            .not_null()
+                            .primary_key(),
+                    )
                     .col(ColumnDef::new(Processes::Name).string_len(140).not_null())
                     .to_owned(),
             )
@@ -50,11 +66,25 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Steps::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Steps::Id).string_len(36).not_null().primary_key())
+                    .col(
+                        ColumnDef::new(Steps::Id)
+                            .string_len(36)
+                            .not_null()
+                            .primary_key(),
+                    )
                     .col(ColumnDef::new(Steps::RecipeId).string_len(36).not_null())
-                    .col(ColumnDef::new(Steps::Description).string_len(140).not_null())
+                    .col(
+                        ColumnDef::new(Steps::Description)
+                            .string_len(140)
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Steps::ResourceId).big_unsigned().not_null())
-                    .col(ColumnDef::new(Steps::OrderNumber).integer().unsigned().not_null())
+                    .col(
+                        ColumnDef::new(Steps::OrderNumber)
+                            .integer()
+                            .unsigned()
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Steps::Duration).integer().not_null())
                     .foreign_key(
                         ForeignKey::create()
@@ -76,9 +106,23 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(ProcessRegistrations::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(ProcessRegistrations::Id).big_unsigned().not_null().auto_increment().primary_key())
-                    .col(ColumnDef::new(ProcessRegistrations::ProcessId).string_len(36).not_null())
-                    .col(ColumnDef::new(ProcessRegistrations::RecipeId).string_len(36).not_null())
+                    .col(
+                        ColumnDef::new(ProcessRegistrations::Id)
+                            .big_unsigned()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(
+                        ColumnDef::new(ProcessRegistrations::ProcessId)
+                            .string_len(36)
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(ProcessRegistrations::RecipeId)
+                            .string_len(36)
+                            .not_null(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .from(ProcessRegistrations::Table, ProcessRegistrations::ProcessId)

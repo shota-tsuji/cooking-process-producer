@@ -31,6 +31,8 @@ tokio = { version = "1.44.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1.17"
 tonic-prost-build = "0.14"
 tonic-prost = "0.14"
+testcontainers-modules = { version = "0.13.0", features = ["mysql", "blocking"] }
+migration = { path = "../migration" }
 
 [build-dependencies]
 tonic-prost-build = "0.14"

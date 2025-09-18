@@ -22,11 +22,7 @@ impl MigrationTrait for Migration {
                             .string_len(36)
                             .not_null(),
                     )
-                    .col(
-                        ColumnDef::new(ProcessSteps::StepId)
-                            .char_len(36)
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(ProcessSteps::StepId).char_len(36).not_null())
                     .col(
                         ColumnDef::new(ProcessSteps::StartTime)
                             .unsigned()

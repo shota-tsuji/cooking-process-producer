@@ -78,3 +78,38 @@ impl ResourceRepository for MysqlResourceRepository {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use sea_orm::Database;
+    use std::sync::Arc;
+    //use testcontainers::{clients, RunnableImage};
+    use testcontainers_modules::mysql::Mysql;
+    use testcontainers_modules::testcontainers::runners::AsyncRunner;
+    use tokio;
+
+    #[tokio::test]
+    async fn test_get_resource_by_id() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        // Start MySQL container
+        let node = AsyncRunner::start(Mysql::default()).await?;
+        let port = node.get_host_port_ipv4(3306).await?;
+        let host = node.get_host().await?;
+        let url = format!("mysql://root@{}:{}/test", host, port,);
+
+        let db = Database::connect(&url).await?;
+
+        migration::seed::seed_resource_repository_medium_test(&db).await;
+        let repo = MysqlResourceRepository {
+            db_connection: Arc::new(db),
+        };
+
+        let result = repo.get_resource_by_id(1).await?;
+
+        assert_eq!(result.id, ResourceId(1));
+        assert_eq!(result.name, "Sugar");
+        assert_eq!(result.amount, 2);
+        Ok(())
+    }
+}
