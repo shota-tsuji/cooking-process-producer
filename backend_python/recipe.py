@@ -6,9 +6,13 @@ from concurrent import futures
 from src.adapter.grpc.generated.proto.cooking.v1 import (
     RecipeWithSchedule, StepWithSchedule, Resource, ProcessServiceBase, CalculateProcessRequest, CalculateProcessResponse
 )
+from grpc_health.v1 import health, health_pb2_grpc
 
 from grpclib.server import Server
 import asyncio
+from fastapi import FastAPI
+import uvicorn
+import threading
 
 import main
 
@@ -111,12 +115,28 @@ class ProcessServiceImpl(ProcessServiceBase):
 #def toGrpcResourceInfo(resource_info):
 #    return helloworld_pb2.ResourceInfo(id=resource_info.id, amount=resource_info.amount, isUsedMultipleResources=resource_info.isUsedMultipleResources, used_resources_count=resource_info.used_resources_count)
 
-async def start_server(host: str = "127.0.0.1", port: int = 50051) -> None:
+async def start_server(host: str = "0.0.0.0", port: int = 50051) -> None:
     server = Server([ProcessServiceImpl()])
     await server.start(host, port)
+    print("Server started")
     await server.wait_closed()
 
+app = FastAPI()
+
+@app.get("/healthz")
+@app.get("/readyz")
+async def health():
+    # you could add extra checks here (db connection, etc.)
+    return {"status": "ok"}
+
+
+def start_http_server():
+    """Run FastAPI (Uvicorn) in its own thread."""
+    uvicorn.run(app, host="0.0.0.0", port=8081, log_level="info")
+
 if __name__ == "__main__":
+    http_thread = threading.Thread(target=start_http_server, daemon=True)
+    http_thread.start()
     asyncio.run(start_server())
 
 #def serve():

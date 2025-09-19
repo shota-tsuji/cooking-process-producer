@@ -21,6 +21,10 @@ dependencies = [
     "urllib3==1.26.15",
     "sqlalchemy",
     "betterproto[compiler]==2.0.0b7",
+    "grpcio-health-checking>=1.70.0",
+    "grpclib[protobuf]>=0.4.8",
+    "fastapi>=0.116.2",
+    "uvicorn>=0.33.0",
 ]
 
 [build-system]
