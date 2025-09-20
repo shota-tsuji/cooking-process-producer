@@ -41,21 +41,20 @@ class Resource:
 
 class StepOutput:
 
-    def __init__(self, recipe_id, step_id, duration, resource_id, start_time, time_line_index):
+    def __init__(self, recipe_id, step_id, duration, resource_id, start_time):
         self.recipe_id = str(recipe_id)
         self.step_id = str(step_id)
         self.duration = duration
         self.resource_id = resource_id
         self.start_time = start_time
-        self.time_line_index = time_line_index
 
     def __str__(self):
         end_time = self.start_time + self.duration
-        return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id}, tli={self.time_line_index})'
+        return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id})'
 
     def __repr__(self):
         end_time = self.start_time + self.duration
-        return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id}, tli={self.time_line_index})'
+        return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id})'
     def __eq__(self, other):
         if not isinstance(other, StepOutput):
             return NotImplemented
@@ -64,8 +63,7 @@ class StepOutput:
             self.step_id == other.step_id and
             self.duration == other.duration and
             self.resource_id == other.resource_id and
-            self.start_time == other.start_time and
-            self.time_line_index == other.time_line_index
+            self.start_time == other.start_time
         )
 
     def __hash__(self):
@@ -75,8 +73,8 @@ class StepOutput:
             self.duration,
             self.resource_id,
             self.start_time,
-            self.time_line_index
         ))
+
 class ResourceInfo:
 
     def __init__(self, id, amount, is_used_multiple_resources, used_resources_count):
@@ -105,13 +103,11 @@ def main(recipe_lists: list[RecipeStep], resources) -> list[StepOutput] | int:
         print(recipe)
         print("-------------------------")
         for step in recipe.steps:
-            print(f"step in recipe: {step}")
             suffix = f'_{recipe.id}_{step.id}'
-
             start_var = model.NewIntVar(0, horizon, 'start' + suffix)
             end_var = model.NewIntVar(0, horizon, 'end' + suffix)
-            interval_var = model.NewIntervalVar(start_var, step.duration, end_var,
-                                                'interval' + suffix)
+            # Constraint: step ends after it starts + duration
+            interval_var = model.NewIntervalVar(start_var, step.duration, end_var, 'interval' + suffix)
             task = task_type(start=start_var, end=end_var, interval=interval_var, order=step.order_number,
                              step_id=step.id, duration=step.duration, resource_id=step.resource_id,
                              recipe_id=step.recipe_id)
@@ -123,29 +119,26 @@ def main(recipe_lists: list[RecipeStep], resources) -> list[StepOutput] | int:
 
             resource_intervals[step.resource_id].append(interval_var)
 
-    print("all_steps:", all_steps)
     model = set_resource_constraint(model, resources, resource_intervals)
     model = set_step_constraint(model, all_steps)
     model = set_time_constraint(model, horizon, all_steps)
 
-    # Creates the solver and solve.
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
-    #print('  - wall time: %f s' % solver.WallTime())
-    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-        step_outputs = []
-        for steps in all_steps.values():
-            for step in steps:
-                start_time = solver.Value(step.start)
-                step_outputs.append(
-                    StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time, 0))
-        print(f'Solution: {step_outputs}')
-        for step_output in step_outputs:
-            print(step_output)
-        return step_outputs
-    else:
+    if not (status == cp_model.OPTIMAL or status == cp_model.FEASIBLE):
         print('No solution found.')
         return 1
+
+    step_outputs = []
+    for steps in all_steps.values():
+        for step in steps:
+            start_time = solver.Value(step.start)
+            step_outputs.append(
+                StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time))
+    print(f'Solution: {step_outputs}')
+    for step_output in step_outputs:
+        print(step_output)
+    return step_outputs
 
 
 

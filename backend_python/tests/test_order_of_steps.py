@@ -20,9 +20,9 @@ def test_single_recipe_order():
         #StepOutput(resource="A", start=0, end=2, recipe=1, step=1, tli=0),
         #StepOutput(resource="A", start=2, end=3, recipe=1, step=2, tli=0),
         #StepOutput(resource="A", start=3, end=4, recipe=1, step=3, tli=0)
-        StepOutput(1, 1, 2, "A", 0, 0),
-        StepOutput(1, 2, 1, "A", 2, 0),
-        StepOutput(1, 3, 1, "A", 3, 0),
+        StepOutput(1, 1, 2, "A", 0),
+        StepOutput(1, 2, 1, "A", 2),
+        StepOutput(1, 3, 1, "A", 3),
     ]
     print(type(step_outputs[0]), type(expected_order[0]))
     assert step_outputs == expected_order
@@ -44,10 +44,10 @@ def test_multiple_recipes_order():
     step_outputs = main([recipe1, recipe2], resources)
     # Each recipe's steps must be in order, but recipes may interleave
     expected_order = [
-        StepOutput(1, 1, 2, "A", 0, 0),
-        StepOutput(1, 2, 1, "A", 2, 0),
-        StepOutput(2, 1, 1, "B", 0, 0),
-        StepOutput(2, 2, 2, "B", 1, 0),
+        StepOutput(1, 1, 2, "A", 0),
+        StepOutput(1, 2, 1, "A", 2),
+        StepOutput(2, 1, 1, "B", 0),
+        StepOutput(2, 2, 2, "B", 1),
     ]
     assert step_outputs == expected_order
 
@@ -72,10 +72,10 @@ def test_when_resource_contention_then_shorter_time_proposed():
     step_outputs = main([recipe1, recipe2], resources)
 
     expected_order = [
-        StepOutput(1, 1, 1, "A", 2, 0),
-        StepOutput(1, 2, 1, "C", 3, 0),
-        StepOutput(2, 1, 2, "A", 0, 0),
-        StepOutput(2, 2, 2, "D", 2, 0),
+        StepOutput(1, 1, 1, "A", 2),
+        StepOutput(1, 2, 1, "C", 3),
+        StepOutput(2, 1, 2, "A", 0),
+        StepOutput(2, 2, 2, "D", 2),
     ]
     assert step_outputs == expected_order
 
@@ -91,8 +91,8 @@ def test_parallel_steps_with_multiple_resources():
     print("result: ", step_outputs)
 
     expected_order = [
-        StepOutput(1, 1, 2, "A", 0, 0),
-        StepOutput(1, 2, 2, "A", 2, 0),
+        StepOutput(1, 1, 2, "A", 0),
+        StepOutput(1, 2, 2, "A", 2),
     ]
 
     assert step_outputs == expected_order
