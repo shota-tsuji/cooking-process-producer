@@ -72,8 +72,7 @@ class ResourceInfo:
         self.isUsedMultipleResources = is_used_multiple_resources
         self.used_resources_count = used_resources_count
 
-
-def main(recipe_lists: list[Recipe], resources) -> list[StepOutput] | int:
+def calculate_process(recipe_lists: list[Recipe], resources) -> list[StepOutput] | int:
     # Computes horizon dynamically as the sum of all durations.
     horizon = sum(recipe.total_cook_time() for recipe in recipe_lists)
 

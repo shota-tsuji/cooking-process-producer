@@ -3,7 +3,7 @@ import os
 import pytest
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from main import Recipe, RecipeStep, Resource, main, StepOutput
+from main import Recipe, RecipeStep, Resource, calculate_process, StepOutput
 
 
 def test_single_recipe_order():
@@ -15,7 +15,7 @@ def test_single_recipe_order():
     ]
     recipe = Recipe(id="1", steps=steps)
     resources = [Resource(resource_id="A", amount=1)]
-    step_outputs = main([recipe], resources)
+    step_outputs = calculate_process([recipe], resources)
     expected_order = [
         #StepOutput(resource="A", start=0, end=2, recipe=1, step=1, tli=0),
         #StepOutput(resource="A", start=2, end=3, recipe=1, step=2, tli=0),
@@ -41,7 +41,7 @@ def test_multiple_recipes_order():
     recipe1 = Recipe(id="1", steps=steps1)
     recipe2 = Recipe(id="2", steps=steps2)
     resources = [Resource(resource_id="A", amount=1), Resource(resource_id="B", amount=1)]
-    step_outputs = main([recipe1, recipe2], resources)
+    step_outputs = calculate_process([recipe1, recipe2], resources)
     # Each recipe's steps must be in order, but recipes may interleave
     expected_order = [
         StepOutput("1", "1", 2, "A", 0),
@@ -69,7 +69,7 @@ def test_when_resource_contention_then_shorter_time_proposed():
         Resource(resource_id="D", amount=1)
     ]
 
-    step_outputs = main([recipe1, recipe2], resources)
+    step_outputs = calculate_process([recipe1, recipe2], resources)
 
     expected_order = [
         StepOutput("1", "1", 1, "A", 2),
@@ -87,7 +87,7 @@ def test_parallel_steps_with_multiple_resources():
     ]
     recipe = Recipe(id="1", steps=steps)
     resources = [Resource(resource_id="A", amount=2)]
-    step_outputs = main([recipe], resources)
+    step_outputs = calculate_process([recipe], resources)
     print("result: ", step_outputs)
 
     expected_order = [
