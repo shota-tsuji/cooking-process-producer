@@ -86,7 +86,7 @@ class ResourceInfo:
         self.used_resources_count = used_resources_count
 
 
-def main(recipe_lists, resources) -> list[StepOutput] | int:
+def main(recipe_lists: list[RecipeStep], resources) -> list[StepOutput] | int:
 
     # Named tuple to store information about created variables.
     task_type = collections.namedtuple('task_type', 'start end interval order step_id duration, resource_id, recipe_id')
@@ -105,6 +105,7 @@ def main(recipe_lists, resources) -> list[StepOutput] | int:
         print(recipe)
         print("-------------------------")
         for step in recipe.steps:
+            print(f"step in recipe: {step}")
             suffix = f'_{recipe.id}_{step.id}'
 
             start_var = model.NewIntVar(0, horizon, 'start' + suffix)
@@ -122,6 +123,7 @@ def main(recipe_lists, resources) -> list[StepOutput] | int:
 
             resource_intervals[step.resource_id].append(interval_var)
 
+    print("all_steps:", all_steps)
     model = set_resource_constraint(model, resources, resource_intervals)
     model = set_step_constraint(model, all_steps)
     model = set_time_constraint(model, horizon, all_steps)
@@ -129,20 +131,17 @@ def main(recipe_lists, resources) -> list[StepOutput] | int:
     # Creates the solver and solve.
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
-
-    print('  - conflicts: %i' % solver.NumConflicts())
-    print('  - wall time: %f s' % solver.WallTime())
-
+    #print('  - wall time: %f s' % solver.WallTime())
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-        print(f'Optimal Schedule Length: {solver.ObjectiveValue()}')
-        step_outputs = get_step_outputs(solver, all_steps, resources)
+        step_outputs = []
+        for steps in all_steps.values():
+            for step in steps:
+                start_time = solver.Value(step.start)
+                step_outputs.append(
+                    StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time, 0))
+        print(f'Solution: {step_outputs}')
         for step_output in step_outputs:
             print(step_output)
-
-        for resource in resources:
-            filtered_list = filter(lambda s: s.resource_id == resource.resource_id, step_outputs)
-            used_resources_count = 1 + max(list(map(lambda s: s.time_line_index, filtered_list)))
-            print(f'used_resources_count={used_resources_count}')
         return step_outputs
     else:
         print('No solution found.')
@@ -194,68 +193,3 @@ def set_time_constraint(model, horizon, all_steps):
     return model
 
 
-# recipe_lists と variable.start の組み合わせを取得
-def get_step_outputs(solver, all_steps, resources) -> list[StepOutput]:
-    step_outputs = []
-    resources_use = {}
-    resources_dict = {}
-    for resource in resources:
-        resources_use[resource.resource_id] = []
-        resources_dict[resource.resource_id] = resource.amount
-
-
-    print(all_steps.keys())
-    for steps in all_steps.values():
-        for step in steps:
-            if resources_dict[step.resource_id] > 1:
-                resources_use[step.resource_id].append(step)
-                continue
-            start_time = solver.Value(step.start)
-            step_outputs.append(
-                StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time, 0))
-
-    def step_cmp(a, b):
-        if solver.Value(a.start) < solver.Value(b.start):
-            return -1
-        elif solver.Value(a.start) == solver.Value(b.start):
-            if solver.Value(a.end) < solver.Value(b.end):
-                return -1
-            elif solver.Value(a.end) > solver.Value(b.end):return 1
-            else:
-                return 0
-        else:
-            return 1
-
-    print(f'step_outputs={step_outputs}')
-    # print(resources_use)
-    for resource in filter(lambda r: r.amount > 1, resources):
-        timelines = [None] * resource.amount
-        #print(timelines)
-        steps = resources_use[resource.resource_id]
-        # resources_use[resource.resource_id].reverse()
-        steps.sort(key=functools.cmp_to_key(step_cmp))
-        # print(steps)
-
-        for step in steps:
-            start_time = solver.Value(step.start)
-
-            # loop until current step is scheduled in one of timelines
-            for i, timeline in enumerate(timelines):
-                #print(timelines)
-                if timeline is None:
-                    timelines[i] = [step]
-                    step_outputs.append(
-                        StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time, i))
-                    break
-                else:
-                    # compare to check if the step is scheduled
-                    print(f'timeline: {timeline[-1].end}')
-                    print(f'step: {step}')
-                    if solver.Value(timeline[-1].end) <= solver.Value(step.start):
-                        timeline.append(step)
-                        step_outputs.append(
-                            StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time, i))
-
-    print(f'step_outputs={step_outputs}')
-
-    return step_outputs

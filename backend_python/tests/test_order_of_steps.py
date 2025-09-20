@@ -68,17 +68,13 @@ def test_parallel_steps_with_multiple_resources():
     resources = [Resource(resource_id="A", amount=2)]
     step_outputs = main([recipe], resources)
     print("result: ", step_outputs)
-    # Even with parallelism, order constraint should be respected
-    actual_order = extract_step_order(step_outputs)
-    from collections import namedtuple
 
-    StepResult = namedtuple("StepResult", ["resource", "start", "end", "recipe", "step", "tli"])
     expected_order = [
-        StepResult(resource="A", start=0, end=2, recipe=1, step=1, tli=0),
-        StepResult(resource="A", start=2, end=4, recipe=1, step=2, tli=0),
+        StepOutput(1, 1, 2, "A", 0, 0),
+        StepOutput(1, 2, 2, "A", 2, 0),
     ]
 
-    assert actual_order == expected_order
+    assert step_outputs == expected_order
 
 if __name__ == "__main__":
     pytest.main([__file__])
