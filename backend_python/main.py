@@ -56,7 +56,27 @@ class StepOutput:
     def __repr__(self):
         end_time = self.start_time + self.duration
         return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id}, tli={self.time_line_index})'
+    def __eq__(self, other):
+        if not isinstance(other, StepOutput):
+            return NotImplemented
+        return (
+            self.recipe_id == other.recipe_id and
+            self.step_id == other.step_id and
+            self.duration == other.duration and
+            self.resource_id == other.resource_id and
+            self.start_time == other.start_time and
+            self.time_line_index == other.time_line_index
+        )
 
+    def __hash__(self):
+        return hash((
+            self.recipe_id,
+            self.step_id,
+            self.duration,
+            self.resource_id,
+            self.start_time,
+            self.time_line_index
+        ))
 class ResourceInfo:
 
     def __init__(self, id, amount, is_used_multiple_resources, used_resources_count):
@@ -66,7 +86,7 @@ class ResourceInfo:
         self.used_resources_count = used_resources_count
 
 
-def main(recipe_lists, resources):
+def main(recipe_lists, resources) -> list[StepOutput] | int:
 
     # Named tuple to store information about created variables.
     task_type = collections.namedtuple('task_type', 'start end interval order step_id duration, resource_id, recipe_id')
@@ -119,17 +139,11 @@ def main(recipe_lists, resources):
         for step_output in step_outputs:
             print(step_output)
 
-        resource_infos = []
         for resource in resources:
             filtered_list = filter(lambda s: s.resource_id == resource.resource_id, step_outputs)
             used_resources_count = 1 + max(list(map(lambda s: s.time_line_index, filtered_list)))
             print(f'used_resources_count={used_resources_count}')
-            if used_resources_count > 1:
-                resource_infos.append(ResourceInfo(resource.resource_id, resource.amount, True, used_resources_count))
-            else:
-                resource_infos.append(ResourceInfo(resource.resource_id, resource.amount, False, used_resources_count))
-
-        return step_outputs, resource_infos
+        return step_outputs
     else:
         print('No solution found.')
         return 1
@@ -181,7 +195,7 @@ def set_time_constraint(model, horizon, all_steps):
 
 
 # recipe_lists と variable.start の組み合わせを取得
-def get_step_outputs(solver, all_steps, resources):
+def get_step_outputs(solver, all_steps, resources) -> list[StepOutput]:
     step_outputs = []
     resources_use = {}
     resources_dict = {}
