@@ -20,18 +20,13 @@ class RecipeStep:
         return f'RecipeStep: {self.recipe_id}, {self.id}, {self.resource_id}, {self.order_number}'
 
 
+@dataclass(frozen=True)
 class Recipe:
+    id: str
+    steps: list[RecipeStep]
 
-    def __init__(self, recipe_id, steps):
-        self.id = recipe_id
-        self.steps = steps
-
-    def __str__(self):
-        return f'Recipe: {self.id}, {self.steps}'
-
-    def __repr__(self):
-        return f'Recipe: {self.id}, {self.steps}'
-
+    def total_cook_time(self) -> int:
+        return sum(step.duration for step in self.steps)
 
 class Resource:
 
@@ -39,6 +34,26 @@ class Resource:
         self.resource_id = resource_id
         self.amount = amount
 
+@dataclass(frozen=False)
+class TaskModel:
+    start: cp_model.IntVar
+    end: cp_model.IntVar
+    interval: cp_model.IntervalVar
+    order: int
+    step_id: str
+    duration: int
+    resource_id: str
+    recipe_id: str
+
+    def __init__(self, start: cp_model.IntVar, end: cp_model.IntVar, interval: cp_model.IntervalVar, step: RecipeStep):
+        self.start = start
+        self.end = end
+        self.interval = interval
+        self.order = step.order_number
+        self.step_id = step.id
+        self.duration = step.duration
+        self.resource_id = step.resource_id
+        self.recipe_id = step.recipe_id
 
 @dataclass(frozen=True)
 class StepOutput:
@@ -58,13 +73,9 @@ class ResourceInfo:
         self.used_resources_count = used_resources_count
 
 
-def main(recipe_lists: list[RecipeStep], resources) -> list[StepOutput] | int:
-
-    # Named tuple to store information about created variables.
-    task_type = collections.namedtuple('task_type', 'start end interval order step_id duration, resource_id, recipe_id')
-
+def main(recipe_lists: list[Recipe], resources) -> list[StepOutput] | int:
     # Computes horizon dynamically as the sum of all durations.
-    horizon = sum(step.duration for recipe in recipe_lists for step in recipe.steps)
+    horizon = sum(recipe.total_cook_time() for recipe in recipe_lists)
 
     model = cp_model.CpModel()
 
@@ -79,9 +90,7 @@ def main(recipe_lists: list[RecipeStep], resources) -> list[StepOutput] | int:
             end_var = model.NewIntVar(0, horizon, 'end' + suffix)
             # Constraint: step ends after it starts + duration
             interval_var = model.NewIntervalVar(start_var, step.duration, end_var, 'interval' + suffix)
-            task = task_type(start=start_var, end=end_var, interval=interval_var, order=step.order_number,
-                             step_id=step.id, duration=step.duration, resource_id=step.resource_id,
-                             recipe_id=step.recipe_id)
+            task = TaskModel(start=start_var, end=end_var, interval=interval_var, step=step)
 
             if recipe.id in all_steps:
                 all_steps[recipe.id].append(task)

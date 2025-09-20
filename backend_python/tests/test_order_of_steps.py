@@ -13,7 +13,7 @@ def test_single_recipe_order():
         RecipeStep(recipe_id="1", step_id="2", duration=1, resource_id="A", order_number=2),
         RecipeStep(recipe_id="1", step_id="3", duration=1, resource_id="A", order_number=3),
     ]
-    recipe = Recipe(recipe_id="1", steps=steps)
+    recipe = Recipe(id="1", steps=steps)
     resources = [Resource(resource_id="A", amount=1)]
     step_outputs = main([recipe], resources)
     expected_order = [
@@ -38,8 +38,8 @@ def test_multiple_recipes_order():
         RecipeStep(recipe_id="2", step_id="1", duration=1, resource_id="B", order_number=1),
         RecipeStep(recipe_id="2", step_id="2", duration=2, resource_id="B", order_number=2),
     ]
-    recipe1 = Recipe(recipe_id="1", steps=steps1)
-    recipe2 = Recipe(recipe_id="2", steps=steps2)
+    recipe1 = Recipe(id="1", steps=steps1)
+    recipe2 = Recipe(id="2", steps=steps2)
     resources = [Resource(resource_id="A", amount=1), Resource(resource_id="B", amount=1)]
     step_outputs = main([recipe1, recipe2], resources)
     # Each recipe's steps must be in order, but recipes may interleave
@@ -60,8 +60,8 @@ def test_when_resource_contention_then_shorter_time_proposed():
         RecipeStep(recipe_id="2", step_id="1", duration=2, resource_id="A", order_number=1),
         RecipeStep(recipe_id="2", step_id="2", duration=2, resource_id="D", order_number=2),
     ]
-    recipe1 = Recipe(recipe_id="1", steps=steps1)
-    recipe2 = Recipe(recipe_id="2", steps=steps2)
+    recipe1 = Recipe(id="1", steps=steps1)
+    recipe2 = Recipe(id="2", steps=steps2)
     resources = [
         Resource(resource_id="A", amount=1),
         Resource(resource_id="B", amount=1),
@@ -85,7 +85,7 @@ def test_parallel_steps_with_multiple_resources():
         RecipeStep(recipe_id="1", step_id="1", duration=2, resource_id="A", order_number=1),
         RecipeStep(recipe_id="1", step_id="2", duration=2, resource_id="A", order_number=2),
     ]
-    recipe = Recipe(recipe_id="1", steps=steps)
+    recipe = Recipe(id="1", steps=steps)
     resources = [Resource(resource_id="A", amount=2)]
     step_outputs = main([recipe], resources)
     print("result: ", step_outputs)
@@ -97,6 +97,11 @@ def test_parallel_steps_with_multiple_resources():
 
     assert step_outputs == expected_order
 
-if __name__ == "__main__":
-    pytest.main([__file__])
-
+def test_total_cook_time():
+    steps = [
+        RecipeStep(recipe_id="1", step_id="1", duration=3, resource_id="A", order_number=1),
+        RecipeStep(recipe_id="1", step_id="2", duration=2, resource_id="B", order_number=2),
+        RecipeStep(recipe_id="1", step_id="3", duration=5, resource_id="C", order_number=3),
+    ]
+    recipe = Recipe(id="1", steps=steps)
+    assert recipe.total_cook_time() == 10
