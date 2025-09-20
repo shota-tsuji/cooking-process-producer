@@ -1,6 +1,7 @@
 import collections
 import functools
 from ortools.sat.python import cp_model
+from dataclasses import dataclass
 
 
 class RecipeStep:
@@ -39,41 +40,14 @@ class Resource:
         self.amount = amount
 
 
+@dataclass(frozen=True)
 class StepOutput:
+    recipe_id: str
+    step_id: str
+    duration: int
+    resource_id: str
+    start_time: int
 
-    def __init__(self, recipe_id, step_id, duration, resource_id, start_time):
-        self.recipe_id = str(recipe_id)
-        self.step_id = str(step_id)
-        self.duration = duration
-        self.resource_id = resource_id
-        self.start_time = start_time
-
-    def __str__(self):
-        end_time = self.start_time + self.duration
-        return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id})'
-
-    def __repr__(self):
-        end_time = self.start_time + self.duration
-        return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id})'
-    def __eq__(self, other):
-        if not isinstance(other, StepOutput):
-            return NotImplemented
-        return (
-            self.recipe_id == other.recipe_id and
-            self.step_id == other.step_id and
-            self.duration == other.duration and
-            self.resource_id == other.resource_id and
-            self.start_time == other.start_time
-        )
-
-    def __hash__(self):
-        return hash((
-            self.recipe_id,
-            self.step_id,
-            self.duration,
-            self.resource_id,
-            self.start_time,
-        ))
 
 class ResourceInfo:
 
@@ -99,9 +73,6 @@ def main(recipe_lists: list[RecipeStep], resources) -> list[StepOutput] | int:
     resource_intervals = collections.defaultdict(list)
 
     for recipe in recipe_lists:
-        print("-------------------------")
-        print(recipe)
-        print("-------------------------")
         for step in recipe.steps:
             suffix = f'_{recipe.id}_{step.id}'
             start_var = model.NewIntVar(0, horizon, 'start' + suffix)
@@ -134,10 +105,8 @@ def main(recipe_lists: list[RecipeStep], resources) -> list[StepOutput] | int:
         for step in steps:
             start_time = solver.Value(step.start)
             step_outputs.append(
-                StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time))
-    print(f'Solution: {step_outputs}')
-    for step_output in step_outputs:
-        print(step_output)
+                StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time)
+            )
     return step_outputs
 
 
@@ -184,5 +153,3 @@ def set_time_constraint(model, horizon, all_steps):
     model.Minimize(obj_var)
 
     return model
-
-
