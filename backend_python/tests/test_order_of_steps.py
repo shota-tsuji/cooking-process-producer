@@ -5,12 +5,6 @@ import pytest
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from main import Recipe, RecipeStep, Resource, main, StepOutput
 
-def extract_step_order(step_outputs):
-    # Sort by start_time, then by recipe_id and step_id for deterministic order
-    return [
-        (s.recipe_id, s.step_id)
-        for s in sorted(step_outputs, key=lambda x: (x.start_time, x.recipe_id, x.step_id))
-    ]
 
 def test_single_recipe_order():
     # Recipe 1: step1 -> step2 -> step3
@@ -22,8 +16,6 @@ def test_single_recipe_order():
     recipe = Recipe(recipe_id="1", steps=steps)
     resources = [Resource(resource_id="A", amount=1)]
     step_outputs = main([recipe], resources)
-    actual_order = extract_step_order(step_outputs)
-    #expected_order = [("1", "1"), ("1", "2"), ("1", "3")]
     expected_order = [
         #StepOutput(resource="A", start=0, end=2, recipe=1, step=1, tli=0),
         #StepOutput(resource="A", start=2, end=3, recipe=1, step=2, tli=0),
@@ -51,12 +43,13 @@ def test_multiple_recipes_order():
     resources = [Resource(resource_id="A", amount=1), Resource(resource_id="B", amount=1)]
     step_outputs = main([recipe1, recipe2], resources)
     # Each recipe's steps must be in order, but recipes may interleave
-    actual_orders = {
-        rid: [sid for r, sid in extract_step_order(filter(lambda s: s.recipe_id == rid, step_outputs))]
-        for rid in ["1", "2"]
-    }
-    assert actual_orders["1"] == ["1", "2"]
-    assert actual_orders["2"] == ["1", "2"]
+    expected_order = [
+        StepOutput(1, 1, 2, "A", 0, 0),
+        StepOutput(1, 2, 1, "A", 2, 0),
+        StepOutput(2, 1, 1, "B", 0, 0),
+        StepOutput(2, 2, 2, "B", 1, 0),
+    ]
+    assert step_outputs == expected_order
 
 def test_parallel_steps_with_multiple_resources():
     # Two steps can run in parallel due to two resources
