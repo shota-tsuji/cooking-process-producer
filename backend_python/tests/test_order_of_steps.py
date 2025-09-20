@@ -51,6 +51,34 @@ def test_multiple_recipes_order():
     ]
     assert step_outputs == expected_order
 
+def test_when_resource_contention_then_shorter_time_proposed():
+    steps1 = [
+        RecipeStep(recipe_id="1", step_id="1", duration=1, resource_id="A", order_number=1),
+        RecipeStep(recipe_id="1", step_id="2", duration=1, resource_id="C", order_number=2),
+    ]
+    steps2 = [
+        RecipeStep(recipe_id="2", step_id="1", duration=2, resource_id="A", order_number=1),
+        RecipeStep(recipe_id="2", step_id="2", duration=2, resource_id="D", order_number=2),
+    ]
+    recipe1 = Recipe(recipe_id="1", steps=steps1)
+    recipe2 = Recipe(recipe_id="2", steps=steps2)
+    resources = [
+        Resource(resource_id="A", amount=1),
+        Resource(resource_id="B", amount=1),
+        Resource(resource_id="C", amount=1),
+        Resource(resource_id="D", amount=1)
+    ]
+
+    step_outputs = main([recipe1, recipe2], resources)
+
+    expected_order = [
+        StepOutput(1, 1, 1, "A", 2, 0),
+        StepOutput(1, 2, 1, "C", 3, 0),
+        StepOutput(2, 1, 2, "A", 0, 0),
+        StepOutput(2, 2, 2, "D", 2, 0),
+    ]
+    assert step_outputs == expected_order
+
 def test_parallel_steps_with_multiple_resources():
     # Two steps can run in parallel due to two resources
     steps = [
