@@ -1,0 +1,30 @@
+name: Deploy to EKS
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::763348989563:role/GitHubActionsEKSRole
+          aws-region: us-east-1
+
+      - name: Deploy to EKS
+        working-directory: backend_rust
+        run: |
+          aws eks update-kubeconfig --name process-pj --region us-east-1
+          kubectl apply -f manifest/dev/namespace.yaml
