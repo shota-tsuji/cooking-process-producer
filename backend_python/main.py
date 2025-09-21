@@ -1,7 +1,8 @@
+from __future__ import annotations
 import collections
 import functools
 from ortools.sat.python import cp_model
-
+from dataclasses import dataclass
 
 class RecipeStep:
 
@@ -19,18 +20,13 @@ class RecipeStep:
         return f'RecipeStep: {self.recipe_id}, {self.id}, {self.resource_id}, {self.order_number}'
 
 
+@dataclass(frozen=True)
 class Recipe:
+    id: str
+    steps: list[RecipeStep]
 
-    def __init__(self, recipe_id, steps):
-        self.id = recipe_id
-        self.steps = steps
-
-    def __str__(self):
-        return f'Recipe: {self.id}, {self.steps}'
-
-    def __repr__(self):
-        return f'Recipe: {self.id}, {self.steps}'
-
+    def total_cook_time(self) -> int:
+        return sum(step.duration for step in self.steps)
 
 class Resource:
 
@@ -38,24 +34,35 @@ class Resource:
         self.resource_id = resource_id
         self.amount = amount
 
+@dataclass(frozen=False)
+class TaskModel:
+    start: cp_model.IntVar
+    end: cp_model.IntVar
+    interval: cp_model.IntervalVar
+    order: int
+    step_id: str
+    duration: int
+    resource_id: str
+    recipe_id: str
 
+    def __init__(self, start: cp_model.IntVar, end: cp_model.IntVar, interval: cp_model.IntervalVar, step: RecipeStep):
+        self.start = start
+        self.end = end
+        self.interval = interval
+        self.order = step.order_number
+        self.step_id = step.id
+        self.duration = step.duration
+        self.resource_id = step.resource_id
+        self.recipe_id = step.recipe_id
+
+@dataclass(frozen=True)
 class StepOutput:
+    recipe_id: str
+    step_id: str
+    duration: int
+    resource_id: str
+    start_time: int
 
-    def __init__(self, recipe_id, step_id, duration, resource_id, start_time, time_line_index):
-        self.recipe_id = str(recipe_id)
-        self.step_id = str(step_id)
-        self.duration = duration
-        self.resource_id = resource_id
-        self.start_time = start_time
-        self.time_line_index = time_line_index
-
-    def __str__(self):
-        end_time = self.start_time + self.duration
-        return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id}, tli={self.time_line_index})'
-
-    def __repr__(self):
-        end_time = self.start_time + self.duration
-        return f'(resource={self.resource_id}, start={self.start_time}, end={end_time}, recipe={self.recipe_id}, step={self.step_id}, tli={self.time_line_index})'
 
 class ResourceInfo:
 
@@ -65,14 +72,9 @@ class ResourceInfo:
         self.isUsedMultipleResources = is_used_multiple_resources
         self.used_resources_count = used_resources_count
 
-
-def main(recipe_lists, resources):
-
-    # Named tuple to store information about created variables.
-    task_type = collections.namedtuple('task_type', 'start end interval order step_id duration, resource_id, recipe_id')
-
+def calculate_process(recipe_lists: list[Recipe], resources) -> list[StepOutput] | int:
     # Computes horizon dynamically as the sum of all durations.
-    horizon = sum(step.duration for recipe in recipe_lists for step in recipe.steps)
+    horizon = sum(recipe.total_cook_time() for recipe in recipe_lists)
 
     model = cp_model.CpModel()
 
@@ -81,19 +83,13 @@ def main(recipe_lists, resources):
     resource_intervals = collections.defaultdict(list)
 
     for recipe in recipe_lists:
-        print("-------------------------")
-        print(recipe)
-        print("-------------------------")
         for step in recipe.steps:
             suffix = f'_{recipe.id}_{step.id}'
-
             start_var = model.NewIntVar(0, horizon, 'start' + suffix)
             end_var = model.NewIntVar(0, horizon, 'end' + suffix)
-            interval_var = model.NewIntervalVar(start_var, step.duration, end_var,
-                                                'interval' + suffix)
-            task = task_type(start=start_var, end=end_var, interval=interval_var, order=step.order_number,
-                             step_id=step.id, duration=step.duration, resource_id=step.resource_id,
-                             recipe_id=step.recipe_id)
+            # Constraint: step ends after it starts + duration
+            interval_var = model.NewIntervalVar(start_var, step.duration, end_var, 'interval' + suffix)
+            task = TaskModel(start=start_var, end=end_var, interval=interval_var, step=step)
 
             if recipe.id in all_steps:
                 all_steps[recipe.id].append(task)
@@ -106,33 +102,20 @@ def main(recipe_lists, resources):
     model = set_step_constraint(model, all_steps)
     model = set_time_constraint(model, horizon, all_steps)
 
-    # Creates the solver and solve.
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
-
-    print('  - conflicts: %i' % solver.NumConflicts())
-    print('  - wall time: %f s' % solver.WallTime())
-
-    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-        print(f'Optimal Schedule Length: {solver.ObjectiveValue()}')
-        step_outputs = get_step_outputs(solver, all_steps, resources)
-        for step_output in step_outputs:
-            print(step_output)
-
-        resource_infos = []
-        for resource in resources:
-            filtered_list = filter(lambda s: s.resource_id == resource.resource_id, step_outputs)
-            used_resources_count = 1 + max(list(map(lambda s: s.time_line_index, filtered_list)))
-            print(f'used_resources_count={used_resources_count}')
-            if used_resources_count > 1:
-                resource_infos.append(ResourceInfo(resource.resource_id, resource.amount, True, used_resources_count))
-            else:
-                resource_infos.append(ResourceInfo(resource.resource_id, resource.amount, False, used_resources_count))
-
-        return step_outputs, resource_infos
-    else:
+    if not (status == cp_model.OPTIMAL or status == cp_model.FEASIBLE):
         print('No solution found.')
         return 1
+
+    step_outputs = []
+    for steps in all_steps.values():
+        for step in steps:
+            start_time = solver.Value(step.start)
+            step_outputs.append(
+                StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time)
+            )
+    return step_outputs
 
 
 
@@ -178,70 +161,3 @@ def set_time_constraint(model, horizon, all_steps):
     model.Minimize(obj_var)
 
     return model
-
-
-# recipe_lists と variable.start の組み合わせを取得
-def get_step_outputs(solver, all_steps, resources):
-    step_outputs = []
-    resources_use = {}
-    resources_dict = {}
-    for resource in resources:
-        resources_use[resource.resource_id] = []
-        resources_dict[resource.resource_id] = resource.amount
-
-
-    print(all_steps.keys())
-    for steps in all_steps.values():
-        for step in steps:
-            if resources_dict[step.resource_id] > 1:
-                resources_use[step.resource_id].append(step)
-                continue
-            start_time = solver.Value(step.start)
-            step_outputs.append(
-                StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time, 0))
-
-    def step_cmp(a, b):
-        if solver.Value(a.start) < solver.Value(b.start):
-            return -1
-        elif solver.Value(a.start) == solver.Value(b.start):
-            if solver.Value(a.end) < solver.Value(b.end):
-                return -1
-            elif solver.Value(a.end) > solver.Value(b.end):return 1
-            else:
-                return 0
-        else:
-            return 1
-
-    print(f'step_outputs={step_outputs}')
-    # print(resources_use)
-    for resource in filter(lambda r: r.amount > 1, resources):
-        timelines = [None] * resource.amount
-        #print(timelines)
-        steps = resources_use[resource.resource_id]
-        # resources_use[resource.resource_id].reverse()
-        steps.sort(key=functools.cmp_to_key(step_cmp))
-        # print(steps)
-
-        for step in steps:
-            start_time = solver.Value(step.start)
-
-            # loop until current step is scheduled in one of timelines
-            for i, timeline in enumerate(timelines):
-                #print(timelines)
-                if timeline is None:
-                    timelines[i] = [step]
-                    step_outputs.append(
-                        StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time, i))
-                    break
-                else:
-                    # compare to check if the step is scheduled
-                    print(f'timeline: {timeline[-1].end}')
-                    print(f'step: {step}')
-                    if solver.Value(timeline[-1].end) <= solver.Value(step.start):
-                        timeline.append(step)
-                        step_outputs.append(
-                            StepOutput(step.recipe_id, step.step_id, step.duration, step.resource_id, start_time, i))
-
-    print(f'step_outputs={step_outputs}')
-
-    return step_outputs
