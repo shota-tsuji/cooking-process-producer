@@ -1,8 +1,8 @@
+from __future__ import annotations
 import collections
 import functools
 from ortools.sat.python import cp_model
 from dataclasses import dataclass
-
 
 class RecipeStep:
 

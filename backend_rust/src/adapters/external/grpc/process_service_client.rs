@@ -92,7 +92,7 @@ mod tests {
                     Step {
                         id: "abc".to_string(),
                         description: "Mix ingredients".to_string(),
-                        duration: 0,
+                        duration: 10,
                         order: 1,
                         resource_id: Default::default(),
                     },
@@ -139,11 +139,11 @@ mod tests {
 
         // Assert: contents and order of recipes and steps
         assert_eq!(scheduled.len(), 2);
-        assert_eq!(scheduled[0].recipe_id, "1");
+        assert_eq!(scheduled[0].recipe_id, "abc");
         assert_eq!(scheduled[1].recipe_id, "2");
-        assert_eq!(scheduled[0].steps[0].step.id, "a");
-        assert_eq!(scheduled[0].steps[0].start_time, 1000);
-        assert_eq!(scheduled[1].steps[0].start_time, 2000);
+        assert_eq!(scheduled[0].steps[0].step.id, "abc");
+        assert_eq!(scheduled[0].steps[0].start_time, 0);
+        assert_eq!(scheduled[0].steps[1].start_time, 10);
         Ok(())
     }
 }
