@@ -16,15 +16,26 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::763348989563:role/GitHubActionsEKSRole
           aws-region: us-east-1
-
+      - name: Login to Amazon ECR Public
+        id: login-ecr-public
+        run: |
+          aws ecr-public get-login-password --region us-east-1 \
+            | docker login --username AWS --password-stdin public.ecr.aws
+      - name: Build, Tag, and Push Image
+        env:
+          IMAGE_TAG: ${GITHUB_SHA::7}
+        run: |
+          docker build -t cooking-api:latest -f backend_rust/Dockerfile .
+          docker tag cooking-api:latest public.ecr.aws/v1n4z9j4/process-pj/cooking-api
+          docker push public.ecr.aws/v1n4z9j4/process-pj/cooking-api
       - name: Deploy to EKS
         working-directory: backend_rust
         run: |
           aws eks update-kubeconfig --name process-pj --region us-east-1
           kubectl apply -f manifest/dev/namespace.yaml
+          kubectl apply -f manifest/deployment.yaml
