@@ -1,0 +1,9 @@
+**/manifest
+**/target
+tests
+**/*.md
+**/.git
+**/.github
+**/node_modules
+**/.venv
+data
