@@ -23,14 +23,22 @@ spec:
             readOnly: true
             volumeAttributes:
               secretProviderClass: "mysql-rds-aws-secrets"
+        - name: backend-config
+          configMap:
+            name: backend-config
       containers:
         - name: backend-rust
           image: public.ecr.aws/v1n4z9j4/process-pj/cooking-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
+          env:
+            - name: CONFIG_FILE
+              value: /etc/config/config.yaml
           volumeMounts:
             - name: secrets-store-inline
               mountPath: "/mnt/secrets-store"
               readOnly: true
-#
+            - name: backend-config
+              mountPath: /etc/config
+              readOnly: true
