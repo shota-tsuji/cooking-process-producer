@@ -33,7 +33,7 @@ jobs:
         env:
           REGISTRY: public.ecr.aws/v1n4z9j4/
           REPOSITORY: process-pj/cooking-api
-          IMAGE_TAG: ${GITHUB_SHA::7}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           echo ${GITHUB_SHA::7}
           echo
@@ -45,7 +45,7 @@ jobs:
         env:
           REGISTRY: public.ecr.aws/v1n4z9j4/
           REPOSITORY: process-pj/cooking-api
-          IMAGE_TAG: ${GITHUB_SHA::7}
+          IMAGE_TAG: ${{ github.sha }}
         working-directory: backend_rust/manifest/dev
         run: |
           # override the image tag in kustomization.yaml
