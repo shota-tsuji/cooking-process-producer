@@ -11,3 +11,7 @@ configMapGenerator:
   - name: backend-config
     files:
       - config.yaml=files/config-dev.yaml
+
+images:
+  - name: public.ecr.aws/v1n4z9j4/process-pj/cooking-api
+    newTag: overridden-by-kustomization
