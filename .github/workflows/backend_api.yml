@@ -3,8 +3,16 @@ name: Backend API (Rust) CI
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'Cargo.toml'
+      - 'backend_rust/**'
+      - '.github/workflows/backend_api.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'Cargo.toml'
+      - 'backend_rust/**'
+      - '.github/workflows/backend_api.yml'
 
 env:
   CARGO_TERM_COLOR: always
