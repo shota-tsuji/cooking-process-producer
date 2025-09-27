@@ -45,5 +45,4 @@ jobs:
         working-directory: backend_rust
         run: |
           aws eks update-kubeconfig --name process-pj --region us-east-1
-          kubectl apply -f manifest/dev/namespace.yaml
-          kubectl apply -f manifest/deployment.yaml
+          kubectl apply -k backend_rust/manifest/dev
