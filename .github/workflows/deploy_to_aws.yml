@@ -31,7 +31,7 @@ jobs:
             | docker login --username AWS --password-stdin public.ecr.aws
       - name: Build, Tag, and Push Image
         env:
-          REGISTRY: public.ecr.aws/v1n4z9j4/
+          REGISTRY: public.ecr.aws/v1n4z9j4
           REPOSITORY: process-pj/cooking-api
           IMAGE_TAG: ${{ github.sha }}
         run: |
@@ -43,7 +43,7 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
       - name: Kustomize Docker image tag
         env:
-          REGISTRY: public.ecr.aws/v1n4z9j4/
+          REGISTRY: public.ecr.aws/v1n4z9j4
           REPOSITORY: process-pj/cooking-api
           IMAGE_TAG: ${{ github.sha }}
         working-directory: backend_rust/manifest/dev
