@@ -1,8 +1,8 @@
 socket_addr: "0.0.0.0:8080"
 database:
-  host: "0.0.0.0"
-  port: 3307
-  username: "admin"
+    host: "database-1.cc98u44c664h.us-east-1.rds.amazonaws.com"
+    port: 3306
+    username: "admin"
 origins:
     - "http://localhost:8000"
 process_grpc_server_url: "http://localhost:50051"

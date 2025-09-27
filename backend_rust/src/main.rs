@@ -14,6 +14,7 @@ use http::{
     header::{ACCEPT, CONTENT_TYPE},
 };
 use sea_orm::{ConnectOptions, Database};
+use secrecy::{ExposeSecret, SecretBox, SecretString};
 use serde::Deserialize;
 use std::env;
 use std::fs::File;
@@ -28,10 +29,30 @@ use tracing_subscriber::{fmt::format::FmtSpan, layer::SubscriberExt, util::Subsc
 pub mod proto {
     tonic::include_proto!("proto.cooking.v1");
 }
+
+#[derive(Debug, serde::Deserialize)]
+pub struct DatabaseConfig {
+    host: String,
+    port: u16,
+    username: String,
+}
+
+impl DatabaseConfig {
+    pub fn connection_string(&self, password: SecretString) -> SecretBox<String> {
+        SecretBox::new(Box::new(format!(
+            "mysql://{}:{}@{}:{}/cooking",
+            self.username,
+            password.expose_secret(),
+            self.host,
+            self.port
+        )))
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub socket_addr: String,
-    pub database_url: String,
+    pub database: DatabaseConfig,
     pub origins: Vec<String>,
     pub process_grpc_server_url: String,
 }
@@ -59,9 +80,28 @@ async fn main() {
     let config_file = File::open(config_file_path).unwrap();
     let config: Config = serde_yaml::from_reader(config_file).unwrap();
 
-    let ops = ConnectOptions::new(config.database_url);
-    let db = Arc::new(Database::connect(ops.clone()).await.unwrap());
-    let db2 = Database::connect(ops.clone()).await.unwrap();
+    let password_path = env::var("DATABASE_PASSWORD_PATH").unwrap();
+    let password_file = File::open(password_path).unwrap();
+    let password = std::io::read_to_string(password_file).unwrap();
+    let password = SecretString::new(Box::from(password));
+    let ops = ConnectOptions::new(config.database.connection_string(password).expose_secret());
+    //let db = Arc::new(Database::connect(ops.clone()).await.unwrap());
+    let db = match Database::connect(ops.clone()).await {
+        Ok(conn) => Arc::new(conn),
+        Err(e) => {
+            tracing::error!("Failed to connect to database: {:?}", e);
+            panic!("Database connection error: {:?}", e);
+        }
+    };
+    let db2 = match Database::connect(ops.clone()).await {
+        Ok(conn) => conn,
+        Err(e) => {
+            tracing::error!("Failed to connect to database (db2): {:?}", e);
+            panic!("Database connection error (db2): {:?}", e);
+        }
+    };
+
+    //let db2 = Database::connect(ops.clone()).await.unwrap();
     let resource_repository = Arc::new(MysqlResourceRepository {
         db_connection: db.clone(),
     });

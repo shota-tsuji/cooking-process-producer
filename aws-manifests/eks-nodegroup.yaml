@@ -1,0 +1,23 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: process-pj
+  region: us-east-1
+
+vpc:
+  id: vpc-0fced831d246cb1d8
+  subnets:
+    private:
+      us-east-1a:
+        id: subnet-09b759e87ca0baa0b
+      us-east-1b:
+        id: subnet-0897fc8aa861d0544
+  securityGroup: sg-0d88ea62768c08ce0
+
+managedNodeGroups:
+- name: cooking-api-nodegroup
+  #instanceType: t2.micro
+  launchTemplate:
+    id: lt-id
+    version: "1"

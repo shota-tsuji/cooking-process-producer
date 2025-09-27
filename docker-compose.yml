@@ -17,9 +17,9 @@ services:
       - "3307:3306"
 
   backend:
-    image: cpp-backend
+    image: cooking-api:latest
     restart: always
-    build: ./backend_rust
+    #build: ./backend_rust
     depends_on:
       - mysql
       - main
@@ -27,8 +27,11 @@ services:
       - "8080:8080"
     environment:
       - CONFIG_FILE=/compose-internal.yaml
+      - DATABASE_PASSWORD_PATH=/local_password.txt
+      - RUST_BACKTRACE=1
     volumes:
       - ./backend_rust/config/compose-internal.yaml:/compose-internal.yaml:ro
+      - ./backend_rust/config/local_password.txt:/local_password.txt:ro
 
   frontend:
     image: cpp-frontend
@@ -40,9 +43,9 @@ services:
       - "8000:8000"
 
   main:
-    image: main:0.1.0
+    image: main:0.1.1
     restart: always
-    build: ./backend_python
+    #build: ./backend_python
     ports:
       - "50051:50051"
 

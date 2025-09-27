@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-rust
+  namespace: dev-cooking-api
+  labels:
+    app: backend-rust
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-rust
+  template:
+    metadata:
+      labels:
+        app: backend-rust
+    spec:
+      serviceAccountName: cooking-api-sa
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "mysql-rds-aws-secrets"
+        - name: password-tmp
+          emptyDir:
+            medium: "Memory"
+        - name: backend-config
+          configMap:
+            name: backend-config
+      #initContainers:
+      #  - name: check-db-password
+      #    image: busybox
+      #    command: ["/bin/sh", "-c"]
+      #    args:
+      #      - "ls /mnt/secrets-store/password && head -c 10 /mnt/secrets-store/password || true"
+      #    volumeMounts:
+      #      - name: secrets-store-inline
+      #        mountPath: "/mnt/secrets-store"
+      #        readOnly: true
+
+      initContainers:
+        - name: extract-db-password
+          # needs jq; see section below for image options
+          image: public.ecr.aws/h0h9t7p1/alpine-bash-curl-jq:latest
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - >
+              SECRET_FILE=$(ls /mnt/secrets-store);
+              jq -r '.password' /mnt/secrets-store/arn:aws:secretsmanager:us-east-1:763348989563:secret:rds-password-wGDi9l > /mnt/secure/password.txt;
+              ls -l /mnt/secure/password.txt;
+              head -c 4 /mnt/secure/password.txt || true
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: /mnt/secrets-store
+              readOnly: true
+            - name: password-tmp
+              mountPath: /mnt/secure
+      containers:
+        - name: backend-rust
+          image: public.ecr.aws/v1n4z9j4/process-pj/cooking-api:2025-09270859
+          #image: public.ecr.aws/docker/library/busybox:1.35
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          #command: ["/bin/sh", "-c"]
+          #args:
+          #   - "nc -vz database-1.cc98u44c664h.us-east-1.rds.amazonaws.com 3306 || echo 'DB not reachable'; sleep 3600"
+          #  - "ls /mnt/secrets-store && head -c 8 /mnt/secrets-store/arn:aws:secretsmanager:us-east-1:763348989563:secret:rds-password-wGDi9l || true"
+          env:
+            - name: CONFIG_FILE
+              value: "/etc/config/config.yaml"
+            - name: DATABASE_PASSWORD_PATH
+              value: "/mnt/secure/password.txt"
+            - name: RUST_BACKTRACE
+              value: "1"
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+            - name: password-tmp
+              mountPath: /mnt/secure
+              readOnly: true
+            - name: backend-config
+              mountPath: /etc/config
+              readOnly: true

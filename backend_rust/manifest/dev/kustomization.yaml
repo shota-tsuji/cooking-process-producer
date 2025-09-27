@@ -1,0 +1,13 @@
+namespace: dev-cooking-api
+
+resources:
+  - deployment.yaml
+  - namespace.yaml
+  - secret-provider-class.yaml
+  - service-account.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: backend-config
+    files:
+      - config.yaml=files/config-dev.yaml
