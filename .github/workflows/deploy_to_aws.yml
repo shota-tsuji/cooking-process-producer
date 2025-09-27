@@ -2,8 +2,11 @@ name: Deploy to EKS
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+    paths:
+      - 'Cargo.toml'
+      - 'backend_rust/**'
+      - '.github/workflows/deploy_to_aws.yml'
 
 permissions:
   id-token: write
