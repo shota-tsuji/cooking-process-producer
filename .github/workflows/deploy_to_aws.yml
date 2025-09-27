@@ -16,11 +16,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      REGISTRY: public.ecr.aws/v1n4z9j4
-      REPOSITORY: process-pj/cooking-api
-      IMAGE_TAG: ${{ github.sha }}
       DOCKER_TAG: public.ecr.aws/v1n4z9j4/process-pj/cooking-api:${{ github.sha }}
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
