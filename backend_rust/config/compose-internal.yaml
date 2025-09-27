@@ -1,5 +1,8 @@
 socket_addr: "0.0.0.0:8080"
-database_url: "mysql://admin:admin@mysql:3306/cooking"
+database:
+  host: "mysql"
+  port: 3306
+  username: "admin"
 origins:
   - "http://localhost:8000"
 process_grpc_server_url: "http://main:50051"

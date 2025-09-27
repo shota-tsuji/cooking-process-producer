@@ -85,8 +85,23 @@ async fn main() {
     let password = std::io::read_to_string(password_file).unwrap();
     let password = SecretString::new(Box::from(password));
     let ops = ConnectOptions::new(config.database.connection_string(password).expose_secret());
-    let db = Arc::new(Database::connect(ops.clone()).await.unwrap());
-    let db2 = Database::connect(ops.clone()).await.unwrap();
+    //let db = Arc::new(Database::connect(ops.clone()).await.unwrap());
+    let db = match Database::connect(ops.clone()).await {
+        Ok(conn) => Arc::new(conn),
+        Err(e) => {
+            tracing::error!("Failed to connect to database: {:?}", e);
+            panic!("Database connection error: {:?}", e);
+        }
+    };
+    let db2 = match Database::connect(ops.clone()).await {
+        Ok(conn) => conn,
+        Err(e) => {
+            tracing::error!("Failed to connect to database (db2): {:?}", e);
+            panic!("Database connection error (db2): {:?}", e);
+        }
+    };
+
+    //let db2 = Database::connect(ops.clone()).await.unwrap();
     let resource_repository = Arc::new(MysqlResourceRepository {
         db_connection: db.clone(),
     });
