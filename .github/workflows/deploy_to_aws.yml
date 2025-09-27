@@ -19,7 +19,7 @@ jobs:
       REGISTRY: public.ecr.aws/v1n4z9j4
       REPOSITORY: process-pj/cooking-api
       IMAGE_TAG: ${{ github.sha }}
-      DOCKER_TAG: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.IMAGE_TAG }
+      DOCKER_TAG: public.ecr.aws/v1n4z9j4/process-pj/cooking-api:${{ github.sha }
 
     steps:
       - name: Checkout Code
@@ -36,9 +36,9 @@ jobs:
             | docker login --username AWS --password-stdin public.ecr.aws
       - name: Build, Tag, and Push Image
         run: |
-          echo $DOCKER_TAG
-          docker build -t $DOCKER_TAG -f backend_rust/Dockerfile .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "$DOCKER_TAG"
+          docker build -t "$DOCKER_TAG" -f backend_rust/Dockerfile .
+          docker push "$DOCKER_TAG"
       - name: Kustomize Docker image tag
         working-directory: backend_rust/manifest/dev
         run: |
