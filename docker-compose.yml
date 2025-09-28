@@ -19,7 +19,15 @@ services:
   backend:
     image: cooking-api:latest
     restart: always
-    #build: ./backend_rust
+    build:
+      context: .
+      dockerfile: ./backend_rust/Dockerfile
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend_rust/src
+        - action: rebuild
+          path: ./backend_rust/Cargo.toml
     depends_on:
       - mysql
       - main
@@ -45,7 +53,7 @@ services:
   main:
     image: main:0.1.1
     restart: always
-    #build: ./backend_python
+    build: ./backend_python
     ports:
       - "50051:50051"
 

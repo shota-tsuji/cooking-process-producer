@@ -1,3 +1,4 @@
+use anyhow::Context;
 use async_graphql::{EmptySubscription, Schema};
 use axum::routing::post;
 use axum::{Router, extract::Extension};
@@ -76,28 +77,34 @@ async fn main() {
         )
         .init();
 
-    let config_file_path = env::var("CONFIG_FILE").unwrap();
-    let config_file = File::open(config_file_path).unwrap();
-    let config: Config = serde_yaml::from_reader(config_file).unwrap();
+    let config = match get_config() {
+        Ok(config) => config,
+        Err(e) => {
+            tracing::error!(error = %e, "Failed to load configuration");
+            std::process::exit(1);
+        }
+    };
 
-    let password_path = env::var("DATABASE_PASSWORD_PATH").unwrap();
-    let password_file = File::open(password_path).unwrap();
-    let password = std::io::read_to_string(password_file).unwrap();
-    let password = SecretString::new(Box::from(password));
+    let password = match get_db_password() {
+        Ok(password) => password,
+        Err(e) => {
+            tracing::error!(error = %e, "Failed to load database password");
+            std::process::exit(1);
+        }
+    };
     let ops = ConnectOptions::new(config.database.connection_string(password).expose_secret());
-    //let db = Arc::new(Database::connect(ops.clone()).await.unwrap());
     let db = match Database::connect(ops.clone()).await {
         Ok(conn) => Arc::new(conn),
         Err(e) => {
             tracing::error!("Failed to connect to database: {:?}", e);
-            panic!("Database connection error: {:?}", e);
+            std::process::exit(1);
         }
     };
     let db2 = match Database::connect(ops.clone()).await {
         Ok(conn) => conn,
         Err(e) => {
             tracing::error!("Failed to connect to database (db2): {:?}", e);
-            panic!("Database connection error (db2): {:?}", e);
+            std::process::exit(1);
         }
     };
 
@@ -111,11 +118,17 @@ async fn main() {
     let process_registration_repository = Arc::new(MysqlProcessRepository {
         db_connection: db.clone(),
     });
-    let process_client = Arc::new(Mutex::new(
-        process_service_client::ProcessServiceClient::connect(config.process_grpc_server_url)
+    let process_client =
+        match process_service_client::ProcessServiceClient::connect(config.process_grpc_server_url)
             .await
-            .unwrap(),
-    ));
+        {
+            Ok(client) => client,
+            Err(e) => {
+                tracing::error!(error = %e, "Failed to connect to process gRPC server");
+                std::process::exit(1);
+            }
+        };
+    let process_client = Arc::new(Mutex::new(process_client));
     let process_service = Arc::new(GrpcProcessServiceClient {
         client: process_client.clone(),
     });
@@ -167,8 +180,37 @@ async fn main() {
         )
         .layer(Extension(schema));
 
-    axum::Server::bind(&config.socket_addr.parse().unwrap())
+    let addr = match config.socket_addr.parse() {
+        Ok(addr) => addr,
+        Err(e) => {
+            tracing::error!(error = %e, "Failed to parse socket address");
+            std::process::exit(1);
+        }
+    };
+    if let Err(e) = axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
-        .unwrap();
+    {
+        tracing::error!(error = %e, "Server error");
+        std::process::exit(1);
+    };
+}
+
+fn get_db_password() -> anyhow::Result<SecretBox<str>> {
+    let password_path = env::var("DATABASE_PASSWORD_PATH")?;
+    let password_file = File::open(&password_path)
+        .with_context(|| format!("Failed to open file: {}", &password_path))?;
+    let password = std::io::read_to_string(&password_file)
+        .with_context(|| format!("Failed to read password file: {}", &password_path))?;
+    let password = SecretString::new(Box::from(password));
+    Ok(password)
+}
+
+fn get_config() -> anyhow::Result<Config> {
+    let config_file_path = env::var("CONFIG_FILE")?;
+    let config_file = File::open(&config_file_path)
+        .with_context(|| format!("Failed to open file: {}", &config_file_path))?;
+    let config: Config = serde_yaml::from_reader(config_file)
+        .with_context(|| format!("Failed to read config file: {}", &config_file_path))?;
+    Ok(config)
 }
